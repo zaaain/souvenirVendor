@@ -1,3 +1,9 @@
+# Deploy to Vercel on push to main/master
+# Required: Add these secrets in GitHub → Settings → Secrets and variables → Actions
+#   - VERCEL_TOKEN    (from https://vercel.com/account/tokens)
+#   - VERCEL_ORG_ID   (from Vercel project Settings → General)
+#   - VERCEL_PROJECT_ID (from Vercel project Settings → General)
+
 name: Deploy to Vercel
 
 on:
@@ -24,6 +30,22 @@ jobs:
 
       - name: Build project
         run: npm run build
+
+      - name: Check Vercel secrets
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "::error::VERCEL_TOKEN is not set. Add it in Repository Settings → Secrets and variables → Actions. Get token from https://vercel.com/account/tokens"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
+            echo "::error::VERCEL_ORG_ID is not set. Add it from Vercel project Settings → General"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "::error::VERCEL_PROJECT_ID is not set. Add it from Vercel project Settings → General"
+            exit 1
+          fi
+          echo "All Vercel secrets are set."
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25

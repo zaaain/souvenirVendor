@@ -48,7 +48,7 @@ const OTPForm = () => {
         const { token, ...profileData } = result.data as { token?: string; [k: string]: unknown }
         authToken = token || ''
         dispatch(setProfileData({
-          profileData: profileData as import('@store/features/auth/auth.types').ProfileData,
+          profileData: profileData as unknown as import('@store/features/auth/auth.types').ProfileData,
           token: authToken,
         }))
       }

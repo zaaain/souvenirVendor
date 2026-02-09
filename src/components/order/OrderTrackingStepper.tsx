@@ -70,7 +70,6 @@ function OrderTrackingStepper({ currentStatus, steps }: OrderTrackingStepperProp
         {STATUS_ORDER.map((status, index) => {
           const step = steps.find((s) => s.status === status)
           const isActive = index <= currentIndex
-          const _isCurrent = index === currentIndex
           const config = STATUS_CONFIG[status]
 
           return (

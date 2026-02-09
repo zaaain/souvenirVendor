@@ -76,11 +76,10 @@ const LoginForm = () => {
       navigate('')
     } catch (error: unknown) {
       console.error('Login failed:', error)
-      const err = error as { data?: { message?: string }; error?: string }
-      if (err?.data?.message || err?.data?.error || (error as { error?: { data?: { message?: string } } })?.error?.data?.message) {
-        const errorMessage = err?.data?.message || err?.data?.error || (error as { error?: { data?: { message?: string } } })?.error?.data?.message
-        eSnack(errorMessage)
-      }
+      const err = error as Record<string, unknown>
+      const msg = (err?.data as { message?: string } | undefined)?.message
+        ?? (typeof err?.error === 'string' ? err.error : (err?.error as { data?: { message?: string } } | undefined)?.data?.message)
+      if (msg) eSnack(msg)
     }
   }
 
@@ -144,11 +143,10 @@ const LoginForm = () => {
       navigate('')
     } catch (error: unknown) {
       console.error('Login failed:', error)
-      const err = error as { data?: { message?: string }; error?: string }
-      if (err?.data?.message || err?.data?.error || (error as { error?: { data?: { message?: string } } })?.error?.data?.message) {
-        const errorMessage = err?.data?.message || err?.data?.error || (error as { error?: { data?: { message?: string } } })?.error?.data?.message
-        eSnack(errorMessage)
-      }
+      const err = error as Record<string, unknown>
+      const msg = (err?.data as { message?: string } | undefined)?.message
+        ?? (typeof err?.error === 'string' ? err.error : (err?.error as { data?: { message?: string } } | undefined)?.data?.message)
+      if (msg) eSnack(msg)
     }
   }
 

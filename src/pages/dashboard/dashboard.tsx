@@ -7,8 +7,6 @@ import { AgeDistributionCard } from '@components/card'
 import { CategoryPerformanceCard } from '@components/card'
 import { SalesTrendsComparisonCard } from '@components/card'
 import { RecentOrdersCard } from '@components/card'
-import type { DonutChartDataItem, ComparisonDataPoint } from '@components/chart'
-
 const Dashboard = () => {
   // State for Conversion Rate tab
   const [conversionRateTab, setConversionRateTab] = useState('week')

@@ -60,10 +60,11 @@ function DonutChart({
                   midAngle?: number
                   innerRadius: number
                   outerRadius: number
-                  percent: number
+                  percent?: number
                 }) => {
                   const RADIAN = Math.PI / 180
                   const midAngle = props.midAngle ?? 0
+                  const percent = props.percent ?? 0
                   const r = (props.innerRadius + props.outerRadius) / 2
                   const x = props.cx + r * Math.cos(-midAngle * RADIAN)
                   const y = props.cy + r * Math.sin(-midAngle * RADIAN)
@@ -76,7 +77,7 @@ function DonutChart({
                       textAnchor="middle"
                       dominantBaseline="central"
                     >
-                      {(props.percent * 100).toFixed(0)}%
+                      {(percent * 100).toFixed(0)}%
                     </text>
                   )
                 }

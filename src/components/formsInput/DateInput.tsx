@@ -11,7 +11,7 @@ function DateInput({
   label,
   value,
   onChange,
-  placeholder = 'Select Date',
+  placeholder: _placeholder = 'Select Date',
   disabled = false,
   className = '',
 }: DateInputProps) {

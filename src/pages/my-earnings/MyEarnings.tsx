@@ -3,7 +3,6 @@ import { SummaryCard } from '@components/card'
 import { PaginateTable } from '@components/table'
 import type { TableColumn } from '@components/table'
 import { Modal } from '@components/modal'
-import { Input } from '@components/formsInput'
 
 const PAYMENT_HISTORY_DATA = [
   { id: 1, invoiceId: 'TXN-2025-48290', orderId: '#ORD-10563', customerName: 'James Patterson', customerEmail: 'j.patterson@email.com', accountInfo: '************ 1234', amount: '$123,000', paymentMethod: 'MasterCard', date: 'Jan 15, 2025', status: 'Pending' },

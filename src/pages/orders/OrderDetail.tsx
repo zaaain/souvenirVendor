@@ -93,7 +93,7 @@ function OrderDetail() {
             </svg>
           </button>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-ManropeBold text-gray-800">#{orderData.orderId}</h1>
+            <h1 className="text-2xl font-ManropeBold text-gray-800">#{String(orderData.orderId)}</h1>
             <span
               className={`inline-flex px-2.5 py-1 rounded-full text-xs font-Manrope ${
                 STATUS_PILL[status] ?? 'bg-gray-100 text-gray-600'

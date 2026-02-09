@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useNavigate } from 'react-router-dom'
@@ -65,7 +65,6 @@ const AddProduct = () => {
     handleSubmit,
     formState: { errors },
     watch,
-    setValue,
   } = useForm<ProductFormData>({
     resolver: yupResolver(productSchema),
     mode: 'onChange',

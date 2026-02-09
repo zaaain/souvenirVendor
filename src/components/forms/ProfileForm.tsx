@@ -64,10 +64,10 @@ const ProfileForm = () => {
     try {
       const result = await uploadProfilePicture(file).unwrap()
       if (result?.message) sSnack(result.message)
-      const profileResult = await getProfile().unwrap()
+      const profileResult = await getProfile(undefined).unwrap()
       if (profileResult?.data && token) {
         dispatch(setProfileData({
-          profileData: profileResult.data,
+          profileData: profileResult.data as import('@store/features/auth/auth.types').ProfileData,
           token,
         }))
       }

@@ -1,4 +1,4 @@
-import React from 'react'
+import type { MouseEvent } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Link, useNavigate } from 'react-router-dom'
@@ -7,6 +7,7 @@ import { Button } from '@components/buttons'
 import { loginSchema, LoginFormData } from '@helpers/schemas'
 import { useLoginMutation } from '@store/features/auth/authSlice'
 import { setProfileData } from '@store/features/auth/authReducer'
+import type { ProfileData } from '@store/features/auth/auth.types'
 import { useLazyGetProfileQuery } from '@store/features/profile/profileSlice'
 import { useAppDispatch } from '@hooks/redux'
 import { eSnack, sSnack } from '@hooks/useToast'
@@ -45,20 +46,20 @@ const LoginForm = () => {
       // Store profileData and token in Redux
       let authToken = ''
       if (result?.data) {
-        const { token, ...profileData } = result.data as { token?: string; [k: string]: unknown }
+        const { token, ...profileData } = result.data as { token?: string } & ProfileData
         authToken = token || ''
         dispatch(setProfileData({
-          profileData: profileData,
+          profileData,
           token: authToken
         }))
       }
 
       // Get profile after successful login
       try {
-        const profileResult = await getProfile().unwrap()
+        const profileResult = await getProfile(undefined).unwrap()
         if (profileResult?.data) {
           dispatch(setProfileData({
-            profileData: profileResult.data,
+            profileData: profileResult.data as ProfileData,
             token: authToken
           }))
         }
@@ -73,18 +74,17 @@ const LoginForm = () => {
       
       // Navigate to dashboard after successful login
       navigate('')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error)
-      
-      // Show error message only if API returns an error message
-      if (error?.data?.message || error?.data?.error || error?.error?.data?.message) {
-        const errorMessage = error?.data?.message || error?.data?.error || error?.error?.data?.message
+      const err = error as { data?: { message?: string }; error?: string }
+      if (err?.data?.message || err?.data?.error || (error as { error?: { data?: { message?: string } } })?.error?.data?.message) {
+        const errorMessage = err?.data?.message || err?.data?.error || (error as { error?: { data?: { message?: string } } })?.error?.data?.message
         eSnack(errorMessage)
       }
     }
   }
 
-  const handleButtonClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleButtonClick = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     
     // Trigger validation first
@@ -114,20 +114,20 @@ const LoginForm = () => {
       // Store profileData and token in Redux
       let authToken = ''
       if (result?.data) {
-        const { token, ...profileData } = result.data as { token?: string; [k: string]: unknown }
+        const { token, ...profileData } = result.data as { token?: string } & ProfileData
         authToken = token || ''
         dispatch(setProfileData({
-          profileData: profileData,
+          profileData,
           token: authToken
         }))
       }
 
       // Get profile after successful login
       try {
-        const profileResult = await getProfile().unwrap()
+        const profileResult = await getProfile(undefined).unwrap()
         if (profileResult?.data) {
           dispatch(setProfileData({
-            profileData: profileResult.data,
+            profileData: profileResult.data as ProfileData,
             token: authToken
           }))
         }
@@ -142,12 +142,11 @@ const LoginForm = () => {
       
       // Navigate to dashboard after successful login
       navigate('')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error)
-      
-      // Show error message only if API returns an error message (not schema errors)
-      if (error?.data?.message || error?.data?.error || error?.error?.data?.message) {
-        const errorMessage = error?.data?.message || error?.data?.error || error?.error?.data?.message
+      const err = error as { data?: { message?: string }; error?: string }
+      if (err?.data?.message || err?.data?.error || (error as { error?: { data?: { message?: string } } })?.error?.data?.message) {
+        const errorMessage = err?.data?.message || err?.data?.error || (error as { error?: { data?: { message?: string } } })?.error?.data?.message
         eSnack(errorMessage)
       }
     }

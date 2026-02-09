@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { SummaryCard } from '@components/card'
 import { ConversionRateCard } from '@components/card'
 import { VisitsByDeviceCard } from '@components/card'
@@ -7,7 +7,6 @@ import { AgeDistributionCard } from '@components/card'
 import { CategoryPerformanceCard } from '@components/card'
 import { SalesTrendsComparisonCard } from '@components/card'
 import { RecentOrdersCard } from '@components/card'
-import type { ConversionRateTab, VisitsByDeviceItem } from '@components/card'
 import type { DonutChartDataItem, ComparisonDataPoint } from '@components/chart'
 
 const Dashboard = () => {

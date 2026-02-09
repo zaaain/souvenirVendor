@@ -23,6 +23,7 @@ interface ComparisonTooltipContentProps {
     name: string
     value: number
     color: string
+    payload?: { day?: string }
   }>
   onActiveChange: (day: string | null) => void
 }
@@ -34,7 +35,7 @@ function ComparisonTooltipContent({
 }: ComparisonTooltipContentProps) {
   useEffect(() => {
     if (active && payload?.[0]?.payload?.day != null) {
-      onActiveChange(payload[0].payload.day)
+      onActiveChange(payload[0].payload!.day!)
     } else {
       onActiveChange(null)
     }

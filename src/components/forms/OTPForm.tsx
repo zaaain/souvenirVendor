@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import OtpInput from 'react-otp-input'
 import { Button } from '@components/buttons'
@@ -48,16 +48,16 @@ const OTPForm = () => {
         const { token, ...profileData } = result.data as { token?: string; [k: string]: unknown }
         authToken = token || ''
         dispatch(setProfileData({
-          profileData: profileData,
-          token: authToken
+          profileData: profileData as import('@store/features/auth/auth.types').ProfileData,
+          token: authToken,
         }))
       }
       try {
-        const profileResult = await getProfile().unwrap()
+        const profileResult = await getProfile(undefined).unwrap()
         if (profileResult?.data) {
           dispatch(setProfileData({
-            profileData: profileResult.data,
-            token: authToken
+            profileData: profileResult.data as import('@store/features/auth/auth.types').ProfileData,
+            token: authToken,
           }))
         }
       } catch (profileError) {

@@ -57,15 +57,16 @@ function DonutChart({
               ? (props: {
                   cx: number
                   cy: number
-                  midAngle: number
+                  midAngle?: number
                   innerRadius: number
                   outerRadius: number
                   percent: number
                 }) => {
                   const RADIAN = Math.PI / 180
+                  const midAngle = props.midAngle ?? 0
                   const r = (props.innerRadius + props.outerRadius) / 2
-                  const x = props.cx + r * Math.cos(-props.midAngle * RADIAN)
-                  const y = props.cy + r * Math.sin(-props.midAngle * RADIAN)
+                  const x = props.cx + r * Math.cos(-midAngle * RADIAN)
+                  const y = props.cy + r * Math.sin(-midAngle * RADIAN)
                   return (
                     <text
                       x={x}

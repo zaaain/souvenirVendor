@@ -80,6 +80,7 @@ export const productSchema = yup.object().shape({
     }),
   vat: yup
     .string()
+    .default('')
     .test('is-valid-percentage', 'VAT must be a valid percentage', (value) => {
       if (!value) return true // Optional
       const num = parseFloat(value)
@@ -87,6 +88,7 @@ export const productSchema = yup.object().shape({
     }),
   discount: yup
     .string()
+    .default('')
     .test('is-valid-percentage', 'Discount must be a valid percentage', (value) => {
       if (!value) return true // Optional
       const num = parseFloat(value)
@@ -94,6 +96,7 @@ export const productSchema = yup.object().shape({
     }),
   weight: yup
     .string()
+    .default('')
     .test('is-valid-weight', 'Weight must be a valid number', (value) => {
       if (!value) return true // Optional
       const num = parseFloat(value)
@@ -101,6 +104,7 @@ export const productSchema = yup.object().shape({
     }),
   height: yup
     .string()
+    .default('')
     .test('is-valid-height', 'Height must be a valid number', (value) => {
       if (!value) return true // Optional
       const num = parseFloat(value)
@@ -108,6 +112,7 @@ export const productSchema = yup.object().shape({
     }),
   length: yup
     .string()
+    .default('')
     .test('is-valid-length', 'Length must be a valid number', (value) => {
       if (!value) return true // Optional
       const num = parseFloat(value)
@@ -115,6 +120,7 @@ export const productSchema = yup.object().shape({
     }),
   width: yup
     .string()
+    .default('')
     .test('is-valid-width', 'Width must be a valid number', (value) => {
       if (!value) return true // Optional
       const num = parseFloat(value)

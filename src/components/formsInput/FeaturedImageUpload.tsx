@@ -25,7 +25,7 @@ const FeaturedImageUpload: React.FC<FeaturedImageUploadProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [_selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null)
 
   const handleFileSelect = (files: FileList | null) => {

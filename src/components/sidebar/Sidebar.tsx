@@ -27,7 +27,9 @@ const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
       flexDirection: 'column',
       position: 'fixed',
       top: 0,
-      height: '100vh',
+      minHeight: '100dvh',
+      maxHeight: '100dvh',
+      overflow: 'hidden',
       zIndex: 100,
     }
     return isRTL ? rtlcss({ ...baseStyles, right: 0 }) as React.CSSProperties : { ...baseStyles, left: 0 }
@@ -112,9 +114,9 @@ const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
   return (
     <div className={`sidebar ${isOpen ? 'sidebar-open' : 'sidebar-closed'}`} style={sidebarStyles}>
-      <div className="flex flex-col h-full">
-        {/* Close Button for Mobile */}
-        <div className="flex justify-end p-4 md:hidden">
+      <div className="sidebar-inner flex flex-col h-full min-h-0">
+        {/* Close Button for Mobile / MD */}
+        <div className="flex justify-end p-4 lg:hidden flex-shrink-0">
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -126,12 +128,12 @@ const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
         </div>
 
         {/* Logo */}
-        <div className="flex justify-center py-6 mb-3">
+        <div className="flex justify-center py-6 mb-3 flex-shrink-0">
           <img src={Logo} alt="Logo" className="h-[100px] w-auto" />
         </div>
 
-        {/* Menu Items */}
-        <nav className="flex-1 px-4">
+        {/* Menu Items - scrollable */}
+        <nav className="sidebar-nav flex-1 px-4 min-h-0 overflow-y-auto">
           {menuItems.map((item) => (
             <Link
               key={item.path}
@@ -147,10 +149,10 @@ const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
         </nav>
 
         {/* Separator */}
-        <div className="sidebar-separator"></div>
+        <div className="sidebar-separator flex-shrink-0"></div>
 
         {/* Logout */}
-        <div className="px-4 pb-6">
+        <div className="px-4 pb-6 flex-shrink-0">
           <button
             onClick={onLogout}
             className="sidebar-menu-item"

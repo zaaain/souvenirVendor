@@ -4,6 +4,7 @@ import storage from 'redux-persist/lib/storage'
 import { authSlice } from './features/auth/authSlice'
 import { profileSlice } from './features/profile/profileSlice'
 import { productSlice } from './features/products/productSlice'
+import { dashboardSlice } from './features/dashboard/dashboardSlice'
 import rootReducer from './rootReducer'
 
 const persistConfig = {
@@ -21,7 +22,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }).concat(authSlice.middleware, profileSlice.middleware, productSlice.middleware),
+    }).concat(authSlice.middleware, profileSlice.middleware, productSlice.middleware, dashboardSlice.middleware),
 })
 
 export const persistor = persistStore(store)

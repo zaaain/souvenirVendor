@@ -34,7 +34,7 @@ function Filter({
 }: FilterProps) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <div className="flex flex-col lg:flex-row gap-4 lg:items-end">
+      <div className="flex flex-col lg:flex-row lg:flex-wrap gap-4 lg:items-end">
         <div className="flex-1 min-w-0">
           <SearchInput
             label="Search"

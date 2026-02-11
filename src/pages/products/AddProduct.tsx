@@ -12,15 +12,9 @@ import { Button } from '@components/buttons'
 import { productSchema, ProductFormData } from '@helpers/schemas'
 import { sSnack, eSnack } from '@hooks/useToast'
 import type { SelectOption } from '@components/select'
-import { useAddProductMutation } from '@store/features/products/productSlice'
+import { useAddProductMutation, useGetCategoriesQuery } from '@store/features/products/productSlice'
 
-const CATEGORY_OPTIONS: SelectOption[] = [
-  { value: 'medication', label: 'Medication' },
-  { value: 'vitamins', label: 'Vitamins' },
-  { value: 'supplements', label: 'Supplements' },
-  { value: 'feed', label: 'Feed & Nutrition' },
-  { value: 'animal-medicines', label: 'Animal Medicines' },
-]
+// Category options ab API se aate hain (GET /vendor/categories)
 
 const STATUS_OPTIONS: SelectOption[] = [
   { value: 'draft', label: 'Draft' },
@@ -35,19 +29,20 @@ function buildProductFormData(
   featuredImage: File[]
 ): FormData {
   const form = new FormData()
-  form.append('productName', (data.productName ?? '').trim())
+  // API keys as per vendor/products POST (form-data): name, description, price, vat, discount, stock, category, sku, weight, height, width, length, images
+  form.append('name', (data.productName ?? '').trim())
   form.append('description', (data.description ?? '').trim())
-  form.append('category', data.category ?? '')
-  form.append('status', status)
-  form.append('sku', (data.sku ?? '').trim())
-  form.append('quantity', String(data.quantity ?? 0))
   form.append('price', (data.price ?? '').trim())
-  if (data.vat?.trim()) form.append('vat', data.vat.trim())
-  if (data.discount?.trim()) form.append('discount', data.discount.trim())
-  if (data.weight?.trim()) form.append('weight', data.weight.trim())
-  if (data.height?.trim()) form.append('height', data.height.trim())
-  if (data.length?.trim()) form.append('length', data.length.trim())
-  if (data.width?.trim()) form.append('width', data.width.trim())
+  form.append('vat', (data.vat ?? '').trim())
+  form.append('discount', (data.discount ?? '').trim())
+  form.append('stock', String(data.quantity ?? 0))
+  form.append('category', data.category ?? '')
+  form.append('sku', (data.sku ?? '').trim())
+  form.append('weight', (data.weight ?? '').trim())
+  form.append('height', (data.height ?? '').trim())
+  form.append('width', (data.width ?? '').trim())
+  form.append('length', (data.length ?? '').trim())
+  // if (status) form.append('status', status) // status abhi payload mein nahi bhejna
   const allImages = featuredImage.length ? [...featuredImage, ...productImages] : productImages
   allImages.forEach((file) => form.append('images', file))
   return form
@@ -56,9 +51,17 @@ function buildProductFormData(
 const AddProduct = () => {
   const navigate = useNavigate()
   const [addProduct, { isLoading: isAdding }] = useAddProductMutation()
+  const { data: categoriesData, isLoading: isLoadingCategories } = useGetCategoriesQuery(undefined, {
+    // page load par sab se pehle category call
+    refetchOnMountOrArgChange: true,
+  })
   const [productImages, setProductImages] = useState<File[]>([])
   const [featuredImage, setFeaturedImage] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const categoryOptions: SelectOption[] = (categoriesData?.data ?? categoriesData?.categories ?? []).map(
+    (cat) => ({ value: cat._id ?? '', label: cat.name ?? cat._id ?? 'Unnamed' })
+  )
 
   const {
     control,
@@ -142,35 +145,41 @@ const AddProduct = () => {
           </button>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-ManropeBold text-gray-800">Add New Product</h1>
-            <span className={`inline-flex px-3 py-1 rounded-full text-sm font-Manrope ${
+            {/* <span className={`inline-flex px-3 py-1 rounded-full text-sm font-Manrope ${
               status === 'draft' ? 'bg-gray-100 text-gray-700' :
               status === 'published' ? 'bg-primary text-white' :
               'bg-orange-100 text-orange-700'
             }`}>
               {STATUS_OPTIONS.find(opt => opt.value === status)?.label || 'Draft'}
-            </span>
+            </span> */}
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button
+          {/* <button
             type="button"
             onClick={handleSaveDraft}
             className="px-4 py-2 text-primary text-sm font-Manrope hover:underline"
           >
             Save as Draft
-          </button>
+          </button> */}
           <button
             type="button"
             onClick={handleCancel}
-            className="px-4 py-2 rounded-lg border border-primary text-primary text-sm font-Manrope hover:bg-primary/5 transition-colors"
+            disabled={isSubmitting || isAdding}
+            className="min-w-[130px] h-10 px-4 py-2 rounded-lg border border-primary text-primary text-sm font-Manrope hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shrink-0 whitespace-nowrap"
           >
             Cancel
           </button>
-          <Button onClick={handlePublish} className="px-4 py-2" loader={isSubmitting || isAdding} disabled={isSubmitting || isAdding}>
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <Button
+            onClick={handlePublish}
+            loader={isSubmitting || isAdding}
+            disabled={isSubmitting || isAdding}
+            className="!h-10 min-w-[130px] w-auto px-4 py-2 text-sm inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap"
+          >
+            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Publish Product
+            Add Product
           </Button>
         </div>
       </div>
@@ -375,9 +384,10 @@ const AddProduct = () => {
                     label="Product Category"
                     value={field.value}
                     onValueChange={field.onChange}
-                    options={CATEGORY_OPTIONS}
-                    placeholder="Select a Category"
+                    options={categoryOptions}
+                    placeholder={isLoadingCategories ? 'Loading categories...' : 'Select a Category'}
                     rounded="lg"
+                    disabled={isLoadingCategories}
                   />
                   {errors.category && (
                     <p className="mt-1 text-sm text-red-500 font-Manrope">{errors.category.message}</p>
@@ -387,7 +397,8 @@ const AddProduct = () => {
             />
           </div>
 
-          {/* Status Card */}
+          {/* Status Card - commented out, status payload mein nahi bhejna abhi */}
+          {/*
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <h3 className="text-lg font-ManropeBold text-gray-800 mb-2">Status</h3>
             <div className="border-b border-gray-200 mb-4" />
@@ -411,6 +422,7 @@ const AddProduct = () => {
               )}
             />
           </div>
+          */}
 
           {/* Inventory Card */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">

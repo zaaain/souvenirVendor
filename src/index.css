@@ -67,7 +67,9 @@ body {
   position: fixed;
   left: 0;
   top: 0;
-  height: 100vh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
   z-index: 100;
 }
 
@@ -77,8 +79,8 @@ body {
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
 }
 
-/* Mobile: Sidebar hidden by default, shown as drawer */
-@media (max-width: 767px) {
+/* Mobile & MD: Sidebar hidden by default, shown as drawer (toggle) */
+@media (max-width: 1023px) {
   .sidebar {
     transition: transform 0.3s ease-in-out;
   }
@@ -100,28 +102,40 @@ body {
   }
 }
 
-/* Desktop: Sidebar always visible */
-@media (min-width: 768px) {
+/* Desktop (lg+): Sidebar always visible */
+@media (min-width: 1024px) {
   .sidebar {
     transform: translateX(0) !important;
   }
 }
 
+/* Sidebar inner scroll - nav area scrolls when content overflows */
+.sidebar-nav {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .dashboard-content {
   flex: 1;
-  margin-left: 280px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-[dir="rtl"] .dashboard-content {
-  margin-left: 0;
-  margin-right: 280px;
+/* Sidebar takes space only on lg+ when always visible */
+@media (min-width: 1024px) {
+  .dashboard-content {
+    margin-left: 280px;
+  }
+  
+  [dir="rtl"] .dashboard-content {
+    margin-left: 0;
+    margin-right: 280px;
+  }
 }
 
-/* Mobile: Remove margin for content area */
-@media (max-width: 767px) {
+/* Mobile & MD: Full width content (sidebar is overlay drawer) */
+@media (max-width: 1023px) {
   .dashboard-content {
     margin-left: 0 !important;
     margin-right: 0 !important;

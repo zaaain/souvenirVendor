@@ -3,6 +3,10 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { VendorInfoCard } from '@components/card'
 import type { VendorInfoCardItem } from '@components/card'
 import { Modal } from '@components/modal'
+import { useGetProductByIdQuery, useDeleteProductMutation, API_BASE_URL } from '@store/features/products/productSlice'
+import type { ProductItem } from '@store/features/products/productSlice'
+import { sSnack, eSnack } from '@hooks/useToast'
+import { TailSpin } from 'react-loader-spinner'
 
 const STATUS_PILL: Record<string, string> = {
   Pending: 'bg-amber-100 text-amber-700',
@@ -10,27 +14,6 @@ const STATUS_PILL: Record<string, string> = {
   Suspended: 'bg-red-100 text-red-700',
   Rejected: 'bg-red-100 text-red-600',
 }
-
-const MOCK_PRODUCTS: Record<string, unknown>[] = [
-  { productId: 'p-001', productName: 'Amoxicillin 50MG', sku: '302012', category: 'Vitamins', status: 'Pending' },
-  { productId: 'p-002', productName: 'PetCalcium Plus', sku: '302013', category: 'Animal Medicines', status: 'Published' },
-  { productId: 'p-003', productName: 'Multi-Vitamin Drops', sku: '302014', category: 'Feed & Nutrition', status: 'Published' },
-  { productId: 'p-004', productName: 'Joint Care Supplement', sku: '302015', category: 'Supplements', status: 'Suspended' },
-  { productId: 'p-005', productName: 'Amoxicillin 50MG', sku: '302016', category: 'Animal Medicines', status: 'Suspended' },
-  { productId: 'p-006', productName: 'Omega Fish Oil', sku: '302017', category: 'Vitamins', status: 'Rejected' },
-  { productId: 'p-007', productName: 'Probiotic Blend', sku: '302018', category: 'Supplements', status: 'Published' },
-  { productId: 'p-008', productName: 'Dewormer Tablets', sku: '302019', category: 'Animal Medicines', status: 'Pending' },
-  { productId: 'p-009', productName: 'Organic Feed Mix', sku: '302020', category: 'Feed & Nutrition', status: 'Published' },
-  { productId: 'p-010', productName: 'Skin & Coat Formula', sku: '302021', category: 'Supplements', status: 'Suspended' },
-  { productId: 'p-011', productName: 'Flea & Tick Spray', sku: '302022', category: 'Animal Medicines', status: 'Published' },
-  { productId: 'p-012', productName: 'Digestive Enzymes', sku: '302023', category: 'Supplements', status: 'Pending' },
-  { productId: 'p-013', productName: 'Premium Dog Food', sku: '302024', category: 'Feed & Nutrition', status: 'Published' },
-  { productId: 'p-014', productName: 'Antibiotic Ointment', sku: '302025', category: 'Animal Medicines', status: 'Rejected' },
-  { productId: 'p-015', productName: 'Vitamin B Complex', sku: '302026', category: 'Vitamins', status: 'Suspended' },
-]
-
-const LOREM =
-  'Euismod purus a vel gravida interdum consectetur diam fermentum ultrices. Augue bibendum diam in elit eu laoreet faucibus ultrices. Condimentum phasellus non neque diam dignissim enim purus pulvinar. Eleifend tincidunt vitae id vitae venenatis. Turpis turpis eu quam ut non non elit eget. Tortor nunc at pharetra posuere justo neque. Ut suspendisse massa lobortis suscipit velit. Massa tellus ut condimentum dapibus eget lacinia suspendisse tristique egestas. Non volutpat sagittis etiam vel ac nisi vulputate elit. Parturient mollis vitae arcu iaculis donec turpis curabitur blandit orci. Tempus nunc tellus cursus cras placerat. Enim semper aliquet a eget dignissim amet ante molestie. At quisque ipsum tincidunt nunc et in vitae. Fringilla mauris at ipsum ipsum suspendisse elementum. Pellentesque pulvinar nulla arcu in tincidunt vestibulum diam vulputate. Et a.'
 
 interface ProductDetailData {
   productName: string
@@ -41,65 +24,51 @@ interface ProductDetailData {
   images: string[]
 }
 
-const MOCK_DETAIL: Record<string, ProductDetailData> = {
-  'p-001': {
-    productName: 'Amoxicillin',
-    status: 'Pending',
-    general: [
-      { label: 'Product Category', value: 'Medication' },
-      { label: 'SKU', value: '1234321' },
-      { label: 'Quantity Available (Stock)', value: '50' },
-      { label: 'Description', value: LOREM, colSpan: 3 },
-    ],
-    pricing: [
-      { label: 'Pricing', value: '$50.00' },
-      { label: 'VAT Amount (%)', value: '0%' },
-      { label: 'Discount Type', value: 'Percentage' },
-      { label: 'Discount Percentage (%)', value: '50%' },
-    ],
-    shipping: [
-      { label: 'Weight (kg)', value: '0.2' },
-      { label: 'Dimensions [Height x Length x Width] (cm)', value: '120 x 320 x 120' },
-    ],
-    images: [
-      'https://picsum.photos/seed/p001-1/240/240',
-      'https://picsum.photos/seed/p001-2/240/240',
-      'https://picsum.photos/seed/p001-3/240/240',
-      'https://picsum.photos/seed/p001-4/240/240',
-      'https://picsum.photos/seed/p001-5/240/240',
-      'https://picsum.photos/seed/p001-6/240/240',
-    ],
-  },
+function getCategoryName(cat: ProductItem['category']): string {
+  if (cat == null) return '—'
+  if (typeof cat === 'object' && 'name' in cat) return String((cat as { name?: string }).name ?? '—')
+  return String(cat)
 }
 
-function getProductDetail(id: string): ProductDetailData | null {
-  if (MOCK_DETAIL[id]) return MOCK_DETAIL[id]
-  const fromList = MOCK_PRODUCTS.find((v) => String(v.productId) === id) as Record<string, unknown> | undefined
-  if (!fromList) return null
+function toImageUrl(path: string | undefined): string {
+  if (!path) return ''
+  const base = API_BASE_URL.replace(/\/$/, '')
+  return path.startsWith('http') ? path : `${base}${path.startsWith('/') ? '' : '/'}${path}`
+}
+
+function mapProductToDetail(p: ProductItem): ProductDetailData {
+  const shipping = (p as { shippingDetails?: { weight?: number; height?: number; width?: number; length?: number } }).shippingDetails
+  const weight = shipping?.weight ?? ''
+  const h = shipping?.height ?? ''
+  const w = shipping?.width ?? ''
+  const l = shipping?.length ?? ''
+  const dimensions = [h, l, w].every((x) => x !== '' && x !== undefined) ? `${h} x ${l} x ${w}` : '—'
+  const priceVal = p.price
+  const priceStr = typeof priceVal === 'number' ? `$${Number(priceVal).toLocaleString()}` : (priceVal ? `$${String(priceVal)}` : '—')
+  const featureImage = (p as { featureImage?: string }).featureImage
+  const imagesArr = (p as { images?: string[] }).images ?? []
+  const allImages = [featureImage, ...imagesArr].filter(Boolean).map(toImageUrl)
+  const statusRaw = p.status ?? ''
+  const statusDisplay = statusRaw ? statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1).toLowerCase() : '—'
   return {
-    productName: String(fromList.productName ?? '—'),
-    status: String(fromList.status ?? '—'),
+    productName: p.name ?? p.productName ?? '—',
+    status: statusDisplay,
     general: [
-      { label: 'Product Category', value: String(fromList.category ?? '—') },
-      { label: 'SKU', value: String(fromList.sku ?? '—') },
-      { label: 'Quantity Available (Stock)', value: '—' },
-      { label: 'Description', value: '—', colSpan: 3 },
+      { label: 'Product Category', value: getCategoryName(p.category) },
+      { label: 'SKU', value: String(p.sku ?? '—') },
+      { label: 'Quantity Available (Stock)', value: String(p.stock ?? p.inventory ?? p.quantity ?? '—') },
+      { label: 'Description', value: String(p.description ?? '—'), colSpan: 3 },
     ],
     pricing: [
-      { label: 'Pricing', value: '—' },
-      { label: 'VAT Amount (%)', value: '—' },
-      { label: 'Discount Type', value: '—' },
-      { label: 'Discount Percentage (%)', value: '—' },
+      { label: 'Pricing', value: priceStr },
+      { label: 'VAT Amount (%)', value: p.vat != null ? `${p.vat}%` : '—' },
+      { label: 'Discount Percentage (%)', value: p.discount != null ? `${p.discount}%` : '—' },
     ],
     shipping: [
-      { label: 'Weight (kg)', value: '—' },
-      { label: 'Dimensions [Height x Length x Width] (cm)', value: '—' },
+      { label: 'Weight (kg)', value: String(weight || '—') },
+      { label: 'Dimensions [Height x Length x Width] (cm)', value: dimensions },
     ],
-    images: [
-      'https://picsum.photos/seed/def1/240/240',
-      'https://picsum.photos/seed/def2/240/240',
-      'https://picsum.photos/seed/def3/240/240',
-    ],
+    images: allImages.length ? allImages : [],
   }
 }
 
@@ -107,9 +76,50 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const detail = id ? getProductDetail(id) : null
+  const { data: productResponse, isLoading, isError } = useGetProductByIdQuery(id ?? '', { skip: !id })
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation()
 
-  if (!id || !detail) {
+  const product: ProductItem | undefined = productResponse && typeof productResponse === 'object' && 'data' in productResponse
+    ? (productResponse as { data?: ProductItem }).data
+    : (productResponse as ProductItem | undefined)
+  const detail = product ? mapProductToDetail(product) : null
+
+  const handleDelete = async () => {
+    if (!id) return
+    try {
+      await deleteProduct(id).unwrap()
+      sSnack('Product deleted successfully')
+      setDeleteModalOpen(false)
+      navigate('/products')
+    } catch (err: unknown) {
+      const msg = (err as { data?: { message?: string }; error?: string })?.data?.message ?? (err as { error?: string })?.error ?? 'Failed to delete product'
+      eSnack(msg)
+    }
+  }
+
+  if (!id) {
+    return (
+      <div className="space-y-4">
+        <Link to="/products" className="inline-flex items-center gap-1 text-sm font-Manrope text-gray-600 hover:text-primary">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Products
+        </Link>
+        <p className="text-gray-600">Invalid product ID.</p>
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <TailSpin visible height={60} width={60} color="#2466D0" ariaLabel="Loading product" />
+      </div>
+    )
+  }
+
+  if (isError || !detail) {
     return (
       <div className="space-y-4">
         <Link to="/products" className="inline-flex items-center gap-1 text-sm font-Manrope text-gray-600 hover:text-primary">
@@ -219,8 +229,8 @@ const ProductDetail = () => {
         description="Deleting the product will permanently remove it from the catalog. This action cannot be undone."
         iconType="error"
         actions={[
-          { label: 'Cancel', onClick: () => setDeleteModalOpen(false), variant: 'secondary' },
-          { label: 'Delete Product', onClick: () => { console.log('Delete', id); setDeleteModalOpen(false); }, variant: 'danger' },
+          { label: 'Cancel', onClick: () => setDeleteModalOpen(false), variant: 'secondary', disabled: isDeleting },
+          { label: isDeleting ? 'Deleting...' : 'Delete Product', onClick: handleDelete, variant: 'danger', disabled: isDeleting },
         ]}
       />
     </div>

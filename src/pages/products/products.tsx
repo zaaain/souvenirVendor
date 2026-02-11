@@ -4,8 +4,9 @@ import { Filter } from '@components/filter'
 import { Modal } from '@components/modal'
 import { PaginateTable } from '@components/table'
 import type { TableColumn } from '@components/table'
-import { useGetProductsQuery } from '@store/features/products/productSlice'
+import { useGetProductsQuery, useDeleteProductMutation } from '@store/features/products/productSlice'
 import type { ProductItem, GetProductsResponse } from '@store/features/products/productSlice'
+import { sSnack, eSnack } from '@hooks/useToast'
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -34,6 +35,17 @@ function ProductIcon() {
 
 const ITEMS_PER_PAGE = 10
 
+function getCategoryName(category: ProductItem['category']): string {
+  if (category == null) return ''
+  if (typeof category === 'object' && 'name' in category) return String((category as { name?: string }).name ?? '')
+  return String(category)
+}
+
+function capitalizeFirst(s: string): string {
+  if (!s) return ''
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+}
+
 function mapProductToRow(item: ProductItem, index: number, startIndex: number): Record<string, unknown> {
   const id = item._id ?? item.productId ?? ''
   const name = item.productName ?? item.name ?? ''
@@ -44,16 +56,18 @@ function mapProductToRow(item: ProductItem, index: number, startIndex: number): 
   const dateAdded = rawDate
     ? new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : ''
+  const statusRaw = item.status ?? ''
+  const statusDisplay = capitalizeFirst(statusRaw)
   return {
     productId: id,
     productName: name,
     sku: item.sku ?? '',
-    category: item.category ?? '',
+    category: getCategoryName(item.category),
     inventory: inv,
     price: priceStr,
     dateAdded,
     dateAddedRaw: rawDate,
-    status: item.status ?? '',
+    status: statusDisplay,
     rowNum: startIndex + index + 1,
   }
 }
@@ -138,6 +152,7 @@ const Products = () => {
   const [page, setPage] = useState(1)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null)
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation()
 
   const { data: response, isLoading } = useGetProductsQuery({
     page,
@@ -166,12 +181,12 @@ const Products = () => {
 
   const filtered = useMemo(() => {
     let list = rawList
-    if (status !== 'all') list = list.filter((r) => (r.status ?? '') === status)
+    if (status !== 'all') list = list.filter((r) => capitalizeFirst(r.status ?? '') === status)
     if (search.trim()) {
       const q = search.toLowerCase()
       const name = (r: ProductItem) => String(r.productName ?? r.name ?? '').toLowerCase()
       const sku = (r: ProductItem) => String(r.sku ?? '').toLowerCase()
-      const cat = (r: ProductItem) => String(r.category ?? '').toLowerCase()
+      const cat = (r: ProductItem) => getCategoryName(r.category).toLowerCase()
       list = list.filter((r) => name(r).includes(q) || sku(r).includes(q) || cat(r).includes(q))
     }
     if (dateAdded) {
@@ -209,6 +224,19 @@ const Products = () => {
     setPage(1)
   }
   const handleExport = () => console.log('Export')
+
+  const handleConfirmDelete = async () => {
+    if (!deleteProductId) return
+    try {
+      await deleteProduct(deleteProductId).unwrap()
+      sSnack('Product deleted successfully')
+      setDeleteModalOpen(false)
+      setDeleteProductId(null)
+    } catch (err: unknown) {
+      const msg = (err as { data?: { message?: string }; error?: string })?.data?.message ?? (err as { error?: string })?.error ?? 'Failed to delete product'
+      eSnack(msg)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -273,8 +301,8 @@ const Products = () => {
         description="Deleting the product will permanently remove it from the catalog. This action cannot be undone."
         iconType="error"
         actions={[
-          { label: 'Cancel', onClick: () => { setDeleteModalOpen(false); setDeleteProductId(null) }, variant: 'secondary' },
-          { label: 'Delete Product', onClick: () => { console.log('Delete', deleteProductId); setDeleteModalOpen(false); setDeleteProductId(null) }, variant: 'danger' },
+          { label: 'Cancel', onClick: () => { setDeleteModalOpen(false); setDeleteProductId(null) }, variant: 'secondary', disabled: isDeleting },
+          { label: isDeleting ? 'Deleting...' : 'Delete Product', onClick: handleConfirmDelete, variant: 'danger', disabled: isDeleting },
         ]}
       />
     </div>

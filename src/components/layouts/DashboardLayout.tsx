@@ -55,7 +55,7 @@ const DashboardLayout = () => {
       {/* Overlay for mobile */}
       {isSidebarOpen && (
         <div 
-          className="sidebar-overlay md:hidden"
+          className="sidebar-overlay lg:hidden"
           onClick={closeSidebar}
         ></div>
       )}

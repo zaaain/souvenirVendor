@@ -8,14 +8,10 @@ import { Select } from '@components/select'
 import { QuantityStepper } from '@components/formsInput'
 import { Button } from '@components/buttons'
 import type { SelectOption } from '@components/select'
-
-const CATEGORY_OPTIONS: SelectOption[] = [
-  { value: 'medication', label: 'Medication' },
-  { value: 'vitamins', label: 'Vitamins' },
-  { value: 'supplements', label: 'Supplements' },
-  { value: 'feed', label: 'Feed & Nutrition' },
-  { value: 'animal-medicines', label: 'Animal Medicines' },
-]
+import { useGetProductByIdQuery, useGetCategoriesQuery, useUpdateProductMutation, API_BASE_URL } from '@store/features/products/productSlice'
+import type { ProductItem } from '@store/features/products/productSlice'
+import { sSnack, eSnack } from '@hooks/useToast'
+import { TailSpin } from 'react-loader-spinner'
 
 const STATUS_OPTIONS: SelectOption[] = [
   { value: 'draft', label: 'Draft' },
@@ -24,29 +20,23 @@ const STATUS_OPTIONS: SelectOption[] = [
   { value: 'suspended', label: 'Suspended' },
 ]
 
-// Mock data - will be replaced with API data
-const MOCK_PRODUCT_DATA = {
-  'p-001': {
-    productName: 'Amoxicillin',
-    description: 'Euismod purus a vel gravida interdum consectetur diam fermentum ultrices. Augue bibendum diam in elit eu laoreet faucibus ultrices.',
-    category: 'medication',
-    status: 'published',
-    sku: '1234321',
-    quantity: 50,
-    price: '50.00',
-    vat: '0',
-    discount: '50',
-    weight: '0.2',
-    height: '120',
-    length: '320',
-    width: '120',
-    images: [],
-  },
+function getCategoryId(cat: ProductItem['category']): string {
+  if (cat == null) return ''
+  if (typeof cat === 'object' && '_id' in cat) return String((cat as { _id?: string })._id ?? '')
+  return String(cat)
 }
 
 const EditProduct = () => {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const { data: productResponse, isLoading: isLoadingProduct } = useGetProductByIdQuery(id ?? '', { skip: !id })
+  const { data: categoriesData } = useGetCategoriesQuery(undefined, { skip: !id })
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation()
+
+  const product: ProductItem | undefined = productResponse && typeof productResponse === 'object' && 'data' in productResponse
+    ? (productResponse as { data?: ProductItem }).data
+    : (productResponse as ProductItem | undefined)
+
   const [productName, setProductName] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
@@ -60,49 +50,61 @@ const EditProduct = () => {
   const [height, setHeight] = useState('')
   const [length, setLength] = useState('')
   const [width, setWidth] = useState('')
+  const [newImages, setNewImages] = useState<File[]>([])
+
+  const categoryOptions: SelectOption[] = (categoriesData?.data ?? categoriesData?.categories ?? []).map(
+    (cat) => ({ value: cat._id ?? '', label: cat.name ?? cat._id ?? 'Unnamed' })
+  )
 
   useEffect(() => {
-    if (id) {
-      const product = MOCK_PRODUCT_DATA[id as keyof typeof MOCK_PRODUCT_DATA]
-      if (product) {
-        setProductName(product.productName)
-        setDescription(product.description)
-        setCategory(product.category)
-        setStatus(product.status)
-        setSku(product.sku)
-        setQuantity(product.quantity)
-        setPrice(product.price)
-        setVat(product.vat)
-        setDiscount(product.discount)
-        setWeight(product.weight)
-        setHeight(product.height)
-        setLength(product.length)
-        setWidth(product.width)
-      }
+    if (product && id) {
+      setProductName(product.name ?? product.productName ?? '')
+      setDescription(String(product.description ?? ''))
+      setCategory(getCategoryId(product.category))
+      setStatus(String(product.status ?? 'draft'))
+      setSku(String(product.sku ?? ''))
+      setQuantity(Number(product.stock ?? product.inventory ?? product.quantity ?? 0))
+      const p = product.price
+      setPrice(typeof p === 'number' ? String(p) : String(p ?? ''))
+      setVat(product.vat != null ? String(product.vat) : '')
+      setDiscount(product.discount != null ? String(product.discount) : '')
+      const ship = (product as { shippingDetails?: { weight?: number; height?: number; width?: number; length?: number } }).shippingDetails
+      setWeight(ship?.weight != null ? String(ship.weight) : '')
+      setHeight(ship?.height != null ? String(ship.height) : '')
+      setLength(ship?.length != null ? String(ship.length) : '')
+      setWidth(ship?.width != null ? String(ship.width) : '')
     }
-  }, [id])
+  }, [product, id])
 
   const handleCancel = () => {
     navigate(`/products/${id}`)
   }
 
-  const handleSaveChanges = () => {
-    console.log('Save Changes', {
-      productName,
-      description,
-      category,
-      status,
-      sku,
-      quantity,
-      price,
-      vat,
-      discount,
-      weight,
-      height,
-      length,
-      width,
-    })
-    navigate(`/products/${id}`)
+  const handleSaveChanges = async () => {
+    if (!id) return
+    const form = new FormData()
+    form.append('name', productName.trim())
+    form.append('price', price.trim())
+    form.append('stock', String(quantity))
+    form.append('isActive', 'true')
+    form.append('description', description.trim())
+    form.append('category', category)
+    form.append('sku', sku.trim())
+    form.append('vat', vat.trim())
+    form.append('discount', discount.trim())
+    form.append('weight', weight.trim())
+    form.append('height', height.trim())
+    form.append('width', width.trim())
+    form.append('length', length.trim())
+    newImages.forEach((file) => form.append('file', file))
+    try {
+      await updateProduct({ id, body: form }).unwrap()
+      sSnack('Product updated successfully')
+      navigate(`/products/${id}`)
+    } catch (err: unknown) {
+      const msg = (err as { data?: { message?: string }; error?: string })?.data?.message ?? (err as { error?: string })?.error ?? 'Failed to update product'
+      eSnack(msg)
+    }
   }
 
   const statusBadgeClass: Record<string, string> = {
@@ -110,6 +112,29 @@ const EditProduct = () => {
     published: 'bg-primary text-white',
     pending: 'bg-orange-100 text-orange-700',
     suspended: 'bg-red-100 text-red-700',
+  }
+
+  const existingImageUrls: string[] = product
+    ? [(product as { featureImage?: string }).featureImage, ...((product as { images?: string[] }).images ?? [])]
+        .filter(Boolean)
+        .map((path) => (path!.startsWith('http') ? path! : `${API_BASE_URL.replace(/\/$/, '')}${path!.startsWith('/') ? '' : '/'}${path!}`))
+    : []
+
+  if (!id) {
+    return (
+      <div className="space-y-4">
+        <p className="text-gray-600">Invalid product ID.</p>
+        <button type="button" onClick={() => navigate('/products')} className="text-primary font-Manrope">Back to Products</button>
+      </div>
+    )
+  }
+
+  if (isLoadingProduct || !product) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <TailSpin visible height={60} width={60} color="#2466D0" ariaLabel="Loading product" />
+      </div>
+    )
   }
 
   return (
@@ -138,11 +163,12 @@ const EditProduct = () => {
           <button
             type="button"
             onClick={handleCancel}
-            className="px-4 py-2 rounded-lg border border-primary text-primary text-sm font-Manrope hover:bg-primary/5 transition-colors"
+            disabled={isUpdating}
+            className="w-[130px] h-10 px-4 py-2 rounded-lg border border-primary text-primary text-sm font-Manrope hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
           >
             Cancel
           </button>
-          <Button onClick={handleSaveChanges} className="px-4 py-2">
+          <Button onClick={handleSaveChanges} className="!h-10 w-[130px] px-4 py-2 text-sm shrink-0" loader={isUpdating} disabled={isUpdating || isLoadingProduct}>
             Save Changes
           </Button>
         </div>
@@ -178,24 +204,22 @@ const EditProduct = () => {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <h3 className="text-lg font-ManropeBold text-gray-800 mb-2">Product Images</h3>
             <div className="border-b border-gray-200 mb-4" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-              {/* Mock images - will be replaced with actual images */}
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
-                  <img
-                    src={`https://picsum.photos/seed/product${i}/240/240`}
-                    alt={`Product ${i}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </div>
+            {existingImageUrls.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+                {existingImageUrls.map((src, i) => (
+                  <div key={i} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                    <img src={src} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            )}
             <FileUpload
               multiple
               accept="image/*"
               maxSize={10}
               placeholder="Drag and drop files here, or click to browse"
               supportedFormats="Supported: JPG, PNG, JPEG (Max 10MB each)"
+              onFilesChange={setNewImages}
             />
           </div>
 
@@ -283,13 +307,15 @@ const EditProduct = () => {
               label="Product Category"
               value={category}
               onValueChange={setCategory}
-              options={CATEGORY_OPTIONS}
+              options={categoryOptions}
               placeholder="Select a Category"
               rounded="lg"
+              disabled={isLoadingProduct}
             />
           </div>
 
-          {/* Status Card */}
+          {/* Status Card - commented out, status display nahi karna edit par */}
+          {/*
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <h3 className="text-lg font-ManropeBold text-gray-800 mb-2">Status</h3>
             <div className="border-b border-gray-200 mb-4" />
@@ -302,6 +328,7 @@ const EditProduct = () => {
               rounded="lg"
             />
           </div>
+          */}
 
           {/* Inventory Card */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
@@ -333,7 +360,8 @@ const EditProduct = () => {
               maxSize={10}
               placeholder="Drag and drop files here, or click to browse"
               supportedFormats="Supported: JPG, PNG, JPEG (Max 10MB each)"
-              currentImageUrl="https://picsum.photos/seed/featured/240/240"
+              currentImageUrl={existingImageUrls[0]}
+              onFileChange={(file) => setNewImages((prev) => (file ? [...prev, file] : prev))}
             />
           </div>
         </div>

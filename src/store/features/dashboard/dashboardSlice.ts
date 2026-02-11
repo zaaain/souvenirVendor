@@ -53,7 +53,7 @@ export interface DashboardResponse {
   }
 }
 
-/** Analytics sales API response – matches backend: salesData, topProducts */
+/** Analytics sales API response – matches backend: salesData, topProducts, and optional analytics fields */
 export interface AnalyticsSalesResponse {
   status?: number
   message?: string
@@ -76,6 +76,12 @@ export interface AnalyticsSalesResponse {
       total?: number
       [key: string]: unknown
     }>
+    conversionRate?: number
+    conversionChart?: Array<{ name?: string; value?: number; color?: string; [key: string]: unknown }>
+    visitsByDevice?: Array<{ icon?: string; label?: string; percent?: string; [key: string]: unknown }>
+    usersVisits?: number | string
+    ageDistribution?: Array<{ name?: string; value?: number; color?: string; [key: string]: unknown }>
+    categoryPerformance?: Array<{ name?: string; value?: number; color?: string; [key: string]: unknown }>
   }
 }
 

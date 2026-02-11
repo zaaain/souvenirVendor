@@ -16,15 +16,9 @@ import { useAddProductMutation, useGetCategoriesQuery } from '@store/features/pr
 
 // Category options ab API se aate hain (GET /vendor/categories)
 
-const STATUS_OPTIONS: SelectOption[] = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'published', label: 'Published' },
-  { value: 'pending', label: 'Pending' },
-]
-
 function buildProductFormData(
   data: ProductFormData,
-  status: string,
+  _status: string,
   productImages: File[],
   featuredImage: File[]
 ): FormData {
@@ -67,7 +61,6 @@ const AddProduct = () => {
     control,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<ProductFormData>({
     resolver: yupResolver(productSchema),
     mode: 'onChange',
@@ -86,25 +79,6 @@ const AddProduct = () => {
       length: '',
       width: '',
     },
-  })
-
-  const status = watch('status')
-
-  const handleSaveDraft = handleSubmit(async (data) => {
-    setIsSubmitting(true)
-    try {
-      const formData = buildProductFormData(data, 'draft', productImages, featuredImage)
-      const result = await addProduct(formData).unwrap()
-      sSnack(result?.message ?? 'Product saved as draft successfully')
-      navigate('/products')
-    } catch (err: unknown) {
-      const message = (err as { data?: { message?: string }; error?: string })?.data?.message
-        ?? (err as { error?: string })?.error
-        ?? 'Failed to save product as draft'
-      eSnack(message)
-    } finally {
-      setIsSubmitting(false)
-    }
   })
 
   const handleCancel = () => {

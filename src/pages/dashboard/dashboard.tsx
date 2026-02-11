@@ -13,7 +13,7 @@ const formatCurrency = (n: number) => (n == null || Number.isNaN(n) ? '$0' : `$$
 
 const Dashboard = () => {
   const [conversionRateTab, setConversionRateTab] = useState('week')
-  const [salesPeriod, setSalesPeriod] = useState<AnalyticsPeriod>('month')
+  const [salesPeriod] = useState<AnalyticsPeriod>('month')
   const [recentOrdersPage, setRecentOrdersPage] = useState(1)
   const recentOrdersItemsPerPage = 10
 
@@ -98,7 +98,7 @@ const Dashboard = () => {
   }, [analyticsData?.data?.conversionRate])
   const conversionChartData = useMemo(() => {
     const fromApi = analyticsData?.data?.conversionChart
-    if (fromApi?.length) return fromApi.map((c) => ({ name: c.name ?? '', value: c.value ?? 0, color: c.color ?? '#3B82F6' }))
+    if (fromApi?.length) return fromApi.map((c: { name?: string; value?: number; color?: string }) => ({ name: c.name ?? '', value: c.value ?? 0, color: c.color ?? '#3B82F6' }))
     return [
       { name: 'Cart', value: 35, color: '#3B82F6' },
       { name: 'Purchase', value: 25, color: '#10B981' },
@@ -107,7 +107,7 @@ const Dashboard = () => {
   }, [analyticsData?.data?.conversionChart])
   const visitsByDeviceItems = useMemo(() => {
     const fromApi = analyticsData?.data?.visitsByDevice
-    if (fromApi?.length) return fromApi.map((v) => ({ icon: v.icon ?? 'mobile', label: v.label ?? '', percent: v.percent ?? '0%' }))
+    if (fromApi?.length) return fromApi.map((v: { icon?: string; label?: string; percent?: string }) => ({ icon: v.icon ?? 'mobile', label: v.label ?? '', percent: v.percent ?? '0%' }))
     return [
       { icon: 'mobile', label: 'Mobile', percent: '35%' },
       { icon: 'laptop', label: 'Laptop', percent: '35%' },
@@ -118,7 +118,7 @@ const Dashboard = () => {
   const usersVisitsValue = analyticsData?.data?.usersVisits != null ? String(analyticsData.data.usersVisits) : '2,847'
   const ageDistributionData = useMemo(() => {
     const fromApi = analyticsData?.data?.ageDistribution
-    if (fromApi?.length) return fromApi.map((a) => ({ name: a.name ?? '', value: a.value ?? 0, color: a.color ?? '#10B981' }))
+    if (fromApi?.length) return fromApi.map((a: { name?: string; value?: number; color?: string }) => ({ name: a.name ?? '', value: a.value ?? 0, color: a.color ?? '#10B981' }))
     return [
       { name: '0-18 years', value: 35, color: '#10B981' },
       { name: '18-30 years', value: 30, color: '#3B82F6' },
@@ -128,7 +128,7 @@ const Dashboard = () => {
   }, [analyticsData?.data?.ageDistribution])
   const categoryPerformanceData = useMemo(() => {
     const fromApi = analyticsData?.data?.categoryPerformance
-    if (fromApi?.length) return fromApi.map((c) => ({ name: c.name ?? '', value: c.value ?? 0, color: c.color ?? '#3B82F6' }))
+    if (fromApi?.length) return fromApi.map((c: { name?: string; value?: number; color?: string }) => ({ name: c.name ?? '', value: c.value ?? 0, color: c.color ?? '#3B82F6' }))
     return [
       { name: 'Medications', value: 45, color: '#3B82F6' },
       { name: 'Supplements', value: 45, color: '#F59E0B' },

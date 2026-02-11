@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { SummaryCard } from '@components/card'
 import { ConversionRateCard } from '@components/card'
-import { VisitsByDeviceCard } from '@components/card'
+import { VisitsByDeviceCard, type VisitsByDeviceItem, type DeviceIconType } from '@components/card'
 import { UsersVisitsCard } from '@components/card'
 import { AgeDistributionCard } from '@components/card'
 import { CategoryPerformanceCard } from '@components/card'
@@ -105,9 +105,13 @@ const Dashboard = () => {
       { name: 'Checkout', value: 29, color: '#F59E0B' },
     ]
   }, [analyticsData?.data?.conversionChart])
-  const visitsByDeviceItems = useMemo(() => {
+  const visitsByDeviceItems = useMemo((): VisitsByDeviceItem[] => {
     const fromApi = analyticsData?.data?.visitsByDevice
-    if (fromApi?.length) return fromApi.map((v: { icon?: string; label?: string; percent?: string }) => ({ icon: v.icon ?? 'mobile', label: v.label ?? '', percent: v.percent ?? '0%' }))
+    const toIcon = (s: string | undefined): DeviceIconType => {
+      const v = (s ?? 'mobile').toLowerCase()
+      return (v === 'laptop' || v === 'tablet' || v === 'other' ? v : 'mobile') as DeviceIconType
+    }
+    if (fromApi?.length) return fromApi.map((v: { icon?: string; label?: string; percent?: string }) => ({ icon: toIcon(v.icon), label: v.label ?? '', percent: v.percent ?? '0%' }))
     return [
       { icon: 'mobile', label: 'Mobile', percent: '35%' },
       { icon: 'laptop', label: 'Laptop', percent: '35%' },

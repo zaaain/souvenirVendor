@@ -104,7 +104,7 @@ Navigate to Dashboard (/)
 
 ### **Base URL**
 ```
-http://18.130.102.234:9078/api/
+https://api.souvenir.live/api/
 ```
 
 ### **Current API Endpoints**
@@ -304,7 +304,7 @@ From [souvenirAdmin repo](https://github.com/zaaain/souvenirAdmin), we need to u
 ## 📚 Resources
 
 - **Admin Portal Repo**: https://github.com/zaaain/souvenirAdmin
-- **API Base URL**: http://18.130.102.234:9078/api/
+- **API Base URL**: https://api.souvenir.live/api/
 - **Current Project**: Vendor Portal (this repo)
 
 ---

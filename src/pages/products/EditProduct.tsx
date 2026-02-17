@@ -114,11 +114,24 @@ const EditProduct = () => {
     suspended: 'bg-red-100 text-red-700',
   }
 
-  const existingImageUrls: string[] = product
-    ? [(product as { featureImage?: string }).featureImage, ...((product as { images?: string[] }).images ?? [])]
-        .filter(Boolean)
-        .map((path) => (path!.startsWith('http') ? path! : `${API_BASE_URL.replace(/\/$/, '')}${path!.startsWith('/') ? '' : '/'}${path!}`))
-    : []
+  // API: featureImage = single path; images = array (elements may be comma-separated paths)
+  // Featured image sirf Featured Image card mein; Product Images mein sirf baaki images (feature exclude)
+  const { featuredImageUrl, productImageUrls } = (() => {
+    const empty = { featuredImageUrl: undefined as string | undefined, productImageUrls: [] as string[] }
+    if (!product) return empty
+    const featureImageRaw = (product as { featureImage?: string }).featureImage?.trim()
+    const imagesRaw = (product as { images?: (string | string[])[] }).images ?? []
+    const flatPaths: string[] = imagesRaw.flatMap((item) =>
+      typeof item === 'string' ? item.split(',').map((s) => s.trim()).filter(Boolean) : []
+    )
+    const base = API_BASE_URL.replace(/\/$/, '')
+    const toUrl = (path: string) => (path.startsWith('http') ? path : `${base}${path.startsWith('/') ? '' : '/'}${path}`)
+    const normalizedFeature = featureImageRaw ? featureImageRaw.replace(/^\//, '') : ''
+    const restPaths = flatPaths.filter((p) => p.replace(/^\//, '') !== normalizedFeature)
+    const featuredImageUrl = featureImageRaw ? toUrl(featureImageRaw) : undefined
+    const productImageUrls = restPaths.map(toUrl).filter(Boolean)
+    return { featuredImageUrl, productImageUrls }
+  })()
 
   if (!id) {
     return (
@@ -200,13 +213,13 @@ const EditProduct = () => {
             </div>
           </div>
 
-          {/* Product Images Card */}
+          {/* Product Images Card - sirf feature ke alawa images (feature alag Featured Image mein) */}
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <h3 className="text-lg font-ManropeBold text-gray-800 mb-2">Product Images</h3>
             <div className="border-b border-gray-200 mb-4" />
-            {existingImageUrls.length > 0 && (
+            {productImageUrls.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-                {existingImageUrls.map((src, i) => (
+                {productImageUrls.map((src, i) => (
                   <div key={i} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
                     <img src={src} alt="" className="w-full h-full object-cover" />
                   </div>
@@ -360,7 +373,7 @@ const EditProduct = () => {
               maxSize={10}
               placeholder="Drag and drop files here, or click to browse"
               supportedFormats="Supported: JPG, PNG, JPEG (Max 10MB each)"
-              currentImageUrl={existingImageUrls[0]}
+              currentImageUrl={featuredImageUrl}
               onFileChange={(file) => setNewImages((prev) => (file ? [...prev, file] : prev))}
             />
           </div>

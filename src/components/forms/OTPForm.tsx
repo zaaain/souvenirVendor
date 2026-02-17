@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import OtpInput from 'react-otp-input'
 import { Button } from '@components/buttons'
-import { useVerifyOTPMutation } from '@store/features/auth/authSlice'
+import { useVerifyOTPMutation, useVerifyPasswordOTPMutation } from '@store/features/auth/authSlice'
 import { setProfileData } from '@store/features/auth/authReducer'
 import { useLazyGetProfileQuery } from '@store/features/profile/profileSlice'
 import { useAppDispatch } from '@hooks/redux'
@@ -12,11 +12,12 @@ const OTPForm = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
-  const [verifyOTP, { isLoading }] = useVerifyOTPMutation()
+  const [verifyOTP, { isLoading: isVerifyLoading }] = useVerifyOTPMutation()
+  const [verifyPasswordOTP, { isLoading: isPasswordVerifyLoading }] = useVerifyPasswordOTPMutation()
   const [getProfile] = useLazyGetProfileQuery()
 
-  // Get email from location state (e.g. after registration)
-  const email = (location.state as { email?: string })?.email || ''
+  const { email = '', fromForgotPassword = false } = (location.state as { email?: string; fromForgotPassword?: boolean }) ?? {}
+  const isLoading = isVerifyLoading || isPasswordVerifyLoading
   
   const [otp, setOtp] = useState('')
   const [timer, setTimer] = useState(60) // 60 seconds = 01:00
@@ -42,6 +43,15 @@ const OTPForm = () => {
   const handleVerify = async () => {
     if (otp.length !== 4 || !email) return
     try {
+      if (fromForgotPassword) {
+        const result = await verifyPasswordOTP({ email, otp }).unwrap()
+        const data = result?.data as { _id?: string; id?: string; passwordResetToken?: string; token?: string } | undefined
+        const id = data?._id ?? data?.id ?? ''
+        const passwordResetToken = data?.passwordResetToken ?? data?.token ?? ''
+        if (result?.message) sSnack(result.message)
+        navigate('/auth/reset-password', { state: { id, passwordResetToken }, replace: true })
+        return
+      }
       const result = await verifyOTP({ email, otp }).unwrap()
       let authToken = ''
       if (result?.data) {

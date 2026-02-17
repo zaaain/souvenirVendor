@@ -4,9 +4,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Input } from '@components/formsInput'
 import { Button } from '@components/buttons'
 import { forgotPasswordSchema, ForgotPasswordFormData } from '@helpers/schemas'
+import { useGenerateOTPMutation } from '@store/features/auth/authSlice'
+import { eSnack, sSnack } from '@hooks/useToast'
 
 const ForgotPasswordForm = () => {
   const navigate = useNavigate()
+  const [generateOTP, { isLoading: isGeneratingOTP }] = useGenerateOTPMutation()
   const {
     control,
     handleSubmit,
@@ -16,8 +19,17 @@ const ForgotPasswordForm = () => {
     defaultValues: { email: '' },
   })
 
-  const onSubmit = (data: ForgotPasswordFormData) => {
-    navigate('/auth/otp', { state: { email: data.email.trim() } })
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    const email = data.email.trim()
+    try {
+      const result = await generateOTP({ email }).unwrap()
+      if (result?.message) sSnack(result.message)
+      navigate('/auth/otp', { state: { email, fromForgotPassword: true } })
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string }; error?: string }
+      const errorMessage = err?.data?.message || err?.error || 'Failed to send verification code'
+      eSnack(errorMessage)
+    }
   }
 
   return (
@@ -46,8 +58,8 @@ const ForgotPasswordForm = () => {
           )}
         />
 
-        <Button type="submit" fullWidth disabled={isSubmitting}>
-          {isSubmitting ? 'Sending...' : 'Send Code'}
+        <Button type="submit" fullWidth disabled={isSubmitting || isGeneratingOTP} loader={isGeneratingOTP}>
+          {isGeneratingOTP ? 'Sending...' : 'Send Code'}
         </Button>
       </form>
 

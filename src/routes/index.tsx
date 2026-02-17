@@ -5,6 +5,7 @@ import Login from '@pages/auth/login'
 import Register from '@pages/auth/register'
 import ForgotPassword from '@pages/auth/forgot-password'
 import OTP from '@pages/auth/otp'
+import ResetPassword from '@pages/auth/reset-password'
 import Dashboard from '@pages/dashboard/dashboard'
 import Profile from '@pages/profile/profile'
 import Settings from '@pages/settings/settings'
@@ -37,6 +38,10 @@ export const router = createBrowserRouter([
       {
         path: 'otp',
         element: <OTP />,
+      },
+      {
+        path: 'reset-password',
+        element: <ResetPassword />,
       },
     ],
   },

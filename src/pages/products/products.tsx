@@ -246,7 +246,7 @@ const Products = () => {
           <p className="text-gray-500 font-Manrope mt-1">Manage your products</p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <button
+          {/* <button
             type="button"
             onClick={handleExport}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary text-sm font-Manrope hover:bg-primary/5 transition-colors"
@@ -255,7 +255,7 @@ const Products = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
             Export
-          </button>
+          </button> */}
           <button
             type="button"
             onClick={() => navigate('/products/add')}

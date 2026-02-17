@@ -118,7 +118,7 @@ const AddProduct = () => {
             </svg>
           </button>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-ManropeBold text-gray-800">Add New Product</h1>
+            <h1 className="text-2xl md:text-3xl font-ManropeBold text-gray-800">Create Product</h1>
             {/* <span className={`inline-flex px-3 py-1 rounded-full text-sm font-Manrope ${
               status === 'draft' ? 'bg-gray-100 text-gray-700' :
               status === 'published' ? 'bg-primary text-white' :
@@ -140,7 +140,7 @@ const AddProduct = () => {
             type="button"
             onClick={handleCancel}
             disabled={isSubmitting || isAdding}
-            className="min-w-[130px] h-10 px-4 py-2 rounded-lg border border-primary text-primary text-sm font-Manrope hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shrink-0 whitespace-nowrap"
+            className="min-w-[130px] h-10 px-4 py-2 rounded-2xl border border-primary text-primary text-sm font-Manrope hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shrink-0 whitespace-nowrap"
           >
             Cancel
           </button>
@@ -153,7 +153,7 @@ const AddProduct = () => {
             <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Add Product
+            Create Product
           </Button>
         </div>
       </div>

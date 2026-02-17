@@ -10,6 +10,7 @@ export interface ProfileData {
   firstname: string
   lastname: string
   status: string
+  profilePicture?: string
   createdAt: string
   updatedAt: string
   _v: number

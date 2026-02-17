@@ -1,16 +1,44 @@
 import { useState, useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
-import { useAppSelector } from '@hooks/redux'
-import { selectToken, selectIsAuthenticated } from '@store/features/auth/authReducer'
+import { useAppSelector, useAppDispatch } from '@hooks/redux'
+import { selectToken, selectIsAuthenticated, selectProfileData, setProfileData } from '@store/features/auth/authReducer'
+import { useGetProfileQuery } from '@store/features/profile/profileSlice'
 import { useLogout } from '@hooks/useLogout'
 import Sidebar from '@components/sidebar/Sidebar'
 import Header from '@components/header/Header'
+import { StatusBlockedModal } from '@components/modal'
+import type { VendorStatus } from '@components/modal'
+import type { ProfileData } from '@store/features/auth/auth.types'
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const dispatch = useAppDispatch()
   const token = useAppSelector(selectToken)
   const isAuthenticated = useAppSelector(selectIsAuthenticated)
+  const profileData = useAppSelector(selectProfileData)
+  const { data: profileResponse } = useGetProfileQuery(undefined, {
+    skip: !token || !isAuthenticated,
+    refetchOnMountOrArgChange: true,
+  })
   const handleLogout = useLogout()
+
+  // Sync latest profile (including status) from API to Redux when dashboard loads
+  useEffect(() => {
+    if (profileResponse?.data && token) {
+      dispatch(setProfileData({
+        profileData: profileResponse.data as ProfileData,
+        token,
+      }))
+    }
+  }, [profileResponse?.data, token, dispatch])
+
+  const showStatusModal =
+    profileData?.status === 'pending' || profileData?.status === 'rejected'
+  const statusForModal: VendorStatus | null = profileData?.status === 'pending'
+    ? 'pending'
+    : profileData?.status === 'rejected'
+      ? 'rejected'
+      : null
 
   useEffect(() => {
     // Check if token exists and user is authenticated
@@ -58,6 +86,13 @@ const DashboardLayout = () => {
           className="sidebar-overlay lg:hidden"
           onClick={closeSidebar}
         ></div>
+      )}
+      {showStatusModal && statusForModal && (
+        <StatusBlockedModal
+          isOpen={true}
+          status={statusForModal}
+          onLogout={handleLogout}
+        />
       )}
     </div>
   )

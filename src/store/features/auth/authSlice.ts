@@ -46,9 +46,40 @@ export const authSlice = createApi({
         body,
       }),
     }),
+    // Forgot password: generate OTP sent to email
+    generateOTP: builder.mutation({
+      query: (body: { email: string }) => ({
+        url: 'auth/vendor/generate/otp?otpFor=password',
+        method: 'POST',
+        body,
+      }),
+    }),
+    // Verify OTP for password reset (returns id + passwordResetToken)
+    verifyPasswordOTP: builder.mutation({
+      query: (body: { email: string; otp: string }) => ({
+        url: 'auth/vendor/verify/password/otp',
+        method: 'POST',
+        body,
+      }),
+    }),
+    // Reset password with token from verify OTP
+    resetPassword: builder.mutation({
+      query: (body: { id: string; passwordResetToken: string; newPassword: string }) => ({
+        url: 'auth/vendor/password/reset',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 })
 
 // Export hooks for usage in functional components
-export const { useRegisterMutation, useLoginMutation, useVerifyOTPMutation } = authSlice
+export const {
+  useRegisterMutation,
+  useLoginMutation,
+  useVerifyOTPMutation,
+  useGenerateOTPMutation,
+  useVerifyPasswordOTPMutation,
+  useResetPasswordMutation,
+} = authSlice
 

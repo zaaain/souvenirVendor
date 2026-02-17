@@ -22,6 +22,8 @@ interface ProductDetailData {
   pricing: VendorInfoCardItem[]
   shipping: VendorInfoCardItem[]
   images: string[]
+  /** Index 0 is the feature image when true */
+  hasFeatureImage: boolean
 }
 
 function getCategoryName(cat: ProductItem['category']): string {
@@ -45,9 +47,21 @@ function mapProductToDetail(p: ProductItem): ProductDetailData {
   const dimensions = [h, l, w].every((x) => x !== '' && x !== undefined) ? `${h} x ${l} x ${w}` : '—'
   const priceVal = p.price
   const priceStr = typeof priceVal === 'number' ? `$${Number(priceVal).toLocaleString()}` : (priceVal ? `$${String(priceVal)}` : '—')
-  const featureImage = (p as { featureImage?: string }).featureImage
-  const imagesArr = (p as { images?: string[] }).images ?? []
-  const allImages = [featureImage, ...imagesArr].filter(Boolean).map(toImageUrl)
+  const featureImageRaw = (p as { featureImage?: string }).featureImage?.trim()
+  const imagesRaw = (p as { images?: (string | string[])[] }).images ?? []
+  // API may send images as array of strings; an element can be comma-separated paths
+  const flatPaths: string[] = imagesRaw.flatMap((item) => {
+    if (typeof item === 'string') {
+      return item.split(',').map((s) => s.trim()).filter(Boolean)
+    }
+    return []
+  })
+  // Feature image first; then rest (excluding feature to avoid duplicate)
+  const normalizedFeature = featureImageRaw ? featureImageRaw.replace(/^\//, '') : ''
+  const restPaths = flatPaths.filter((path) => path.replace(/^\//, '') !== normalizedFeature)
+  const orderedPaths: string[] = featureImageRaw ? [featureImageRaw, ...restPaths] : restPaths
+  const allImages = orderedPaths.map(toImageUrl).filter(Boolean)
+  const hasFeatureImage = Boolean(featureImageRaw)
   const statusRaw = p.status ?? ''
   const statusDisplay = statusRaw ? statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1).toLowerCase() : '—'
   return {
@@ -68,7 +82,8 @@ function mapProductToDetail(p: ProductItem): ProductDetailData {
       { label: 'Weight (kg)', value: String(weight || '—') },
       { label: 'Dimensions [Height x Length x Width] (cm)', value: dimensions },
     ],
-    images: allImages.length ? allImages : [],
+    images: allImages,
+    hasFeatureImage,
   }
 }
 
@@ -215,8 +230,13 @@ const ProductDetail = () => {
         <div className="border-b border-gray-200 mb-4" />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {detail.images.map((src, i) => (
-            <div key={i} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+            <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
               <img src={src} alt="" className="w-full h-full object-cover" />
+              {detail.hasFeatureImage && i === 0 && (
+                <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-primary text-white text-xs font-ManropeBold">
+                  Feature
+                </span>
+              )}
             </div>
           ))}
         </div>

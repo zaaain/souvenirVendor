@@ -61,7 +61,7 @@ export const profileSlice = createApi({
     uploadProfilePicture: builder.mutation({
       query: (file: File) => {
         const formData = new FormData()
-        formData.append('file', file)
+        formData.append('avatar', file)
         return {
           url: 'vendor/profile/picture',
           method: 'POST',

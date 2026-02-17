@@ -10,11 +10,16 @@ import { setProfileData } from '@store/features/auth/authReducer'
 import { useAppDispatch } from '@hooks/redux'
 import { eSnack, sSnack } from '@hooks/useToast'
 
+const API_BASE = 'https://api.souvenir.live'
+
+function getProfileImageUrl(path: string | undefined): string {
+  if (!path) return ''
+  return path.startsWith('http') ? path : `${API_BASE.replace(/\/$/, '')}${path.startsWith('/') ? '' : '/'}${path}`
+}
+
 interface ProfileFormData {
   fullName: string
   email: string
-  phone: string
-  address: string
 }
 
 const ProfileForm = () => {
@@ -22,21 +27,18 @@ const ProfileForm = () => {
   const profileData = useAppSelector(selectProfileData)
   const token = useAppSelector(selectToken)
   const [profilePicture, setProfilePicture] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const existingProfileImageUrl = getProfileImageUrl(profileData?.profilePicture)
   const [uploadProfilePicture, { isLoading: isUploadingPicture }] = useUploadProfilePictureMutation()
   const [getProfile] = useLazyGetProfileQuery()
 
   const {
     control,
-    handleSubmit,
     formState: { errors },
     reset,
   } = useForm<ProfileFormData>({
     defaultValues: {
       fullName: '',
       email: '',
-      phone: '',
-      address: '',
     },
   })
 
@@ -47,8 +49,6 @@ const ProfileForm = () => {
           ? `${profileData.firstname} ${profileData.lastname}`
           : '',
         email: profileData.email || '',
-        phone: '',
-        address: '',
       })
     }
   }, [profileData, reset])
@@ -81,56 +81,16 @@ const ProfileForm = () => {
     event.target.value = ''
   }
 
-  const onSubmit = async (data: ProfileFormData) => {
-    setIsSubmitting(true)
-    try {
-      console.log('Profile data:', data)
-      // API integration will be added here
-      // await updateProfile(data)
-    } catch (error) {
-      console.error('Error updating profile:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleCancel = () => {
-    reset()
-    setProfilePicture(null)
-  }
-
   return (
     <div className="w-full  mx-auto">
       {/* Header Section */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 font-ManropeBold">
-            Edit Profile
-          </h1>
-          <p className="text-gray-600 font-Manrope">
-            Update your profile information
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleCancel}
-            className="px-6"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-            loader={isSubmitting}
-            className="px-6"
-          >
-            Save Changes
-          </Button>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 font-ManropeBold">
+          Profile
+        </h1>
+        <p className="text-gray-600 font-Manrope">
+          Profile information
+        </p>
       </div>
 
       {/* Personal Information Card */}
@@ -146,6 +106,12 @@ const ProfileForm = () => {
               {profilePicture ? (
                 <img
                   src={profilePicture}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : existingProfileImageUrl ? (
+                <img
+                  src={existingProfileImageUrl}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
@@ -218,13 +184,11 @@ const ProfileForm = () => {
           </div>
         </div>
 
-        {/* Form Fields - Two Column Layout */}
+        {/* Form Fields - Name and Email (disabled) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Full Name */}
           <Controller
             name="fullName"
             control={control}
-            rules={{ required: 'Full name is required' }}
             render={({ field }) => (
               <Input
                 label="Full Name"
@@ -233,22 +197,13 @@ const ProfileForm = () => {
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
-                error={errors.fullName?.message}
+                disabled
               />
             )}
           />
-
-          {/* Email */}
           <Controller
             name="email"
             control={control}
-            rules={{
-              required: 'Email is required',
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Invalid email address',
-              },
-            }}
             render={({ field }) => (
               <Input
                 label="Email"
@@ -257,43 +212,7 @@ const ProfileForm = () => {
                 value={field.value}
                 onChange={field.onChange}
                 onBlur={field.onBlur}
-                error={errors.email?.message}
-              />
-            )}
-          />
-
-          {/* Phone */}
-          <Controller
-            name="phone"
-            control={control}
-            rules={{ required: 'Phone is required' }}
-            render={({ field }) => (
-              <Input
-                label="Phone"
-                type="tel"
-                placeholder="Phone"
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                error={errors.phone?.message}
-              />
-            )}
-          />
-
-          {/* Address */}
-          <Controller
-            name="address"
-            control={control}
-            rules={{ required: 'Address is required' }}
-            render={({ field }) => (
-              <Input
-                label="Address"
-                type="text"
-                placeholder="Address"
-                value={field.value}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                error={errors.address?.message}
+                disabled
               />
             )}
           />

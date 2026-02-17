@@ -126,7 +126,6 @@ const Orders = () => {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('all')
-  const [orderDate, setOrderDate] = useState('')
   const [page, setPage] = useState(1)
 
   const filtered = useMemo(() => {
@@ -136,11 +135,8 @@ const Orders = () => {
       const q = search.toLowerCase()
       list = list.filter((r) => String(r.orderId).toLowerCase().includes(q))
     }
-    if (orderDate) {
-      list = list.filter((r) => String(r.orderDateRaw ?? '') === orderDate)
-    }
     return list
-  }, [search, status, orderDate])
+  }, [search, status])
 
   const total = filtered.length
   const start = (page - 1) * ITEMS_PER_PAGE
@@ -162,7 +158,6 @@ const Orders = () => {
   const handleClearAll = () => {
     setSearch('')
     setStatus('all')
-    setOrderDate('')
     setPage(1)
   }
 
@@ -192,10 +187,6 @@ const Orders = () => {
         statusValue={status}
         onStatusChange={setStatus}
         statusOptions={STATUS_OPTIONS}
-        dateValue={orderDate}
-        onDateChange={setOrderDate}
-        dateLabel="Order Date"
-        datePlaceholder="Select Date"
         onApply={handleApply}
         onClearAll={handleClearAll}
       />

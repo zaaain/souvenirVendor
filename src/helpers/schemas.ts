@@ -43,6 +43,17 @@ export const forgotPasswordSchema = yup.object().shape({
     .email('Invalid email address'),
 })
 
+export const resetPasswordSchema = yup.object().shape({
+  newPassword: yup
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('New password is required'),
+  confirmPassword: yup
+    .string()
+    .required('Confirm password is required')
+    .oneOf([yup.ref('newPassword')], 'Passwords must match'),
+})
+
 export const productSchema = yup.object().shape({
   productName: yup
     .string()
@@ -131,5 +142,6 @@ export const productSchema = yup.object().shape({
 export type LoginFormData = yup.InferType<typeof loginSchema>
 export type RegisterFormData = yup.InferType<typeof registerSchema>
 export type ForgotPasswordFormData = yup.InferType<typeof forgotPasswordSchema>
+export type ResetPasswordFormData = yup.InferType<typeof resetPasswordSchema>
 export type ProductFormData = yup.InferType<typeof productSchema>
 

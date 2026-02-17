@@ -9,6 +9,13 @@ interface HeaderProps {
   onMenuClick?: () => void
 }
 
+const API_BASE = 'https://api.souvenir.live'
+
+function getProfileImageUrl(path: string | undefined): string {
+  if (!path) return ''
+  return path.startsWith('http') ? path : `${API_BASE.replace(/\/$/, '')}${path.startsWith('/') ? '' : '/'}${path}`
+}
+
 const Header = ({ onMenuClick }: HeaderProps) => {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
@@ -16,6 +23,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   const handleLogout = useLogout()
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
   const profileRef = useRef<HTMLDivElement>(null)
+  const profileImageUrl = getProfileImageUrl(profileData?.profilePicture)
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -33,11 +41,6 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
   const handleProfileClick = () => {
     navigate('/profile')
-    setShowProfileDropdown(false)
-  }
-
-  const handleSettingsClick = () => {
-    navigate('/settings')
     setShowProfileDropdown(false)
   }
 
@@ -119,8 +122,12 @@ const Header = ({ onMenuClick }: HeaderProps) => {
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
               className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-ManropeBold text-sm">
-                {profileData?.firstname?.[0]?.toUpperCase() || 'U'}
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-ManropeBold text-sm shrink-0">
+                {profileImageUrl ? (
+                  <img src={profileImageUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  profileData?.firstname?.[0]?.toUpperCase() || 'U'
+                )}
               </div>
               <div className="flex flex-col items-start">
                 <span className="text-sm font-ManropeBold text-gray-800">
@@ -148,12 +155,6 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                   className="w-full px-4 py-2 text-left text-sm font-Manrope text-gray-700 hover:bg-gray-50"
                 >
                   {t('header.profile')}
-                </button>
-                <button 
-                  onClick={handleSettingsClick}
-                  className="w-full px-4 py-2 text-left text-sm font-Manrope text-gray-700 hover:bg-gray-50"
-                >
-                  {t('header.settings')}
                 </button>
                 <button 
                   onClick={onLogout}

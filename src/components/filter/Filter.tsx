@@ -10,8 +10,9 @@ export interface FilterProps {
   statusValue: string
   onStatusChange: (v: string) => void
   statusOptions: SelectOption[]
-  dateValue: string
-  onDateChange: (v: string) => void
+  /** When omitted, date input is hidden and status input takes the extra width (lg:w-44) */
+  dateValue?: string
+  onDateChange?: (v: string) => void
   dateLabel?: string
   datePlaceholder?: string
   onApply: () => void
@@ -32,6 +33,7 @@ function Filter({
   onApply,
   onClearAll,
 }: FilterProps) {
+  const showDate = dateValue !== undefined && onDateChange !== undefined
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <div className="flex flex-col lg:flex-row lg:flex-wrap gap-4 lg:items-end">
@@ -43,7 +45,7 @@ function Filter({
             placeholder={searchPlaceholder}
           />
         </div>
-        <div className="w-full lg:w-40">
+        <div className={showDate ? 'w-full lg:w-40' : 'w-full lg:w-44'}>
           <Select
             label="Status"
             value={statusValue}
@@ -53,14 +55,16 @@ function Filter({
             rounded="lg"
           />
         </div>
-        <div className="w-full lg:w-44">
-          <DateInput
-            label={dateLabel}
-            value={dateValue}
-            onChange={onDateChange}
-            placeholder={datePlaceholder}
-          />
-        </div>
+        {showDate && (
+          <div className="w-full lg:w-44">
+            <DateInput
+              label={dateLabel}
+              value={dateValue}
+              onChange={onDateChange}
+              placeholder={datePlaceholder}
+            />
+          </div>
+        )}
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"

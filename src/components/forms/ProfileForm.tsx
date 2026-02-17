@@ -33,7 +33,6 @@ const ProfileForm = () => {
 
   const {
     control,
-    formState: { errors },
     reset,
   } = useForm<ProfileFormData>({
     defaultValues: {

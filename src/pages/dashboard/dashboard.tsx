@@ -1,10 +1,6 @@
 import { useState, useMemo } from 'react'
 import moment from 'moment'
 import { SummaryCard } from '@components/card'
-import { ConversionRateCard } from '@components/card'
-import { VisitsByDeviceCard, type VisitsByDeviceItem, type DeviceIconType } from '@components/card'
-import { UsersVisitsCard } from '@components/card'
-import { AgeDistributionCard } from '@components/card'
 import { CategoryPerformanceCard } from '@components/card'
 import { SalesTrendsComparisonCard } from '@components/card'
 import { RecentOrdersCard } from '@components/card'
@@ -13,7 +9,7 @@ import { useGetDashboardQuery, useGetAnalyticsSalesQuery, type AnalyticsPeriod }
 const formatCurrency = (n: number) => (n == null || Number.isNaN(n) ? 'QAR 0' : `QAR ${Number(n).toLocaleString()}`)
 
 const Dashboard = () => {
-  const [conversionRateTab, setConversionRateTab] = useState('week')
+  const [_conversionRateTab, _setConversionRateTab] = useState('week')
   const [salesPeriod] = useState<AnalyticsPeriod>('month')
   const [recentOrdersPage, setRecentOrdersPage] = useState(1)
   const recentOrdersItemsPerPage = 10
@@ -115,45 +111,6 @@ const Dashboard = () => {
       { day: 'Sun', thisWeek: 0, lastWeek: 0 },
     ]
   }, [analyticsData?.data?.salesData])
-  const conversionData = useMemo(() => {
-    const fromApi = analyticsData?.data?.conversionRate
-    if (typeof fromApi === 'number') return `${fromApi}%`
-    return '25%'
-  }, [analyticsData?.data?.conversionRate])
-  const conversionChartData = useMemo(() => {
-    const fromApi = analyticsData?.data?.conversionChart
-    if (fromApi?.length) return fromApi.map((c: { name?: string; value?: number; color?: string }) => ({ name: c.name ?? '', value: c.value ?? 0, color: c.color ?? '#3B82F6' }))
-    return [
-      { name: 'Cart', value: 35, color: '#3B82F6' },
-      { name: 'Purchase', value: 25, color: '#10B981' },
-      { name: 'Checkout', value: 29, color: '#F59E0B' },
-    ]
-  }, [analyticsData?.data?.conversionChart])
-  const visitsByDeviceItems = useMemo((): VisitsByDeviceItem[] => {
-    const fromApi = analyticsData?.data?.visitsByDevice
-    const toIcon = (s: string | undefined): DeviceIconType => {
-      const v = (s ?? 'mobile').toLowerCase()
-      return (v === 'laptop' || v === 'tablet' || v === 'other' ? v : 'mobile') as DeviceIconType
-    }
-    if (fromApi?.length) return fromApi.map((v: { icon?: string; label?: string; percent?: string }) => ({ icon: toIcon(v.icon), label: v.label ?? '', percent: v.percent ?? '0%' }))
-    return [
-      { icon: 'mobile', label: 'Mobile', percent: '35%' },
-      { icon: 'laptop', label: 'Laptop', percent: '35%' },
-      { icon: 'tablet', label: 'Tablet', percent: '35%' },
-      { icon: 'other', label: 'Other', percent: '35%' },
-    ]
-  }, [analyticsData?.data?.visitsByDevice])
-  const usersVisitsValue = analyticsData?.data?.usersVisits != null ? String(analyticsData.data.usersVisits) : '2,847'
-  const ageDistributionData = useMemo(() => {
-    const fromApi = analyticsData?.data?.ageDistribution
-    if (fromApi?.length) return fromApi.map((a: { name?: string; value?: number; color?: string }) => ({ name: a.name ?? '', value: a.value ?? 0, color: a.color ?? '#10B981' }))
-    return [
-      { name: '0-18 years', value: 35, color: '#10B981' },
-      { name: '18-30 years', value: 30, color: '#3B82F6' },
-      { name: '30-40 years', value: 10, color: '#FBBF24' },
-      { name: 'Other', value: 10, color: '#F59E0B' },
-    ]
-  }, [analyticsData?.data?.ageDistribution])
   const categoryPerformanceData = useMemo(() => {
     const fromApi = analyticsData?.data?.categoryPerformance
     if (fromApi?.length) return fromApi.map((c: { name?: string; value?: number; color?: string }) => ({ name: c.name ?? '', value: c.value ?? 0, color: c.color ?? '#3B82F6' }))

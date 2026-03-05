@@ -37,6 +37,7 @@ interface DocumentRow {
   documentNumber: string
   link: string
   expiryDate: string
+  [key: string]: unknown
 }
 
 const defaultDocuments: DocumentRow[] = [
@@ -71,7 +72,7 @@ const EditCompany = () => {
   const [docNumber, setDocNumber] = useState('')
   const [verificationUrl, setVerificationUrl] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
-  const [docFiles, setDocFiles] = useState<File[]>([])
+  const [, setDocFiles] = useState<File[]>([])
 
   const handleBack = () => navigate(-1)
   const handleCancel = () => navigate(-1)
@@ -114,7 +115,7 @@ const EditCompany = () => {
     {
       key: 'actions',
       label: 'Actions',
-      render: (_, row) => (
+      render: (_, _row) => (
         <div className="flex items-center gap-2">
           <button type="button" className="p-1.5 text-gray-500 hover:text-primary transition-colors" aria-label="Download">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,7 +239,7 @@ const EditCompany = () => {
               </button>
             </div>
             <div className="border-b border-gray-200 mb-4" />
-            <SimpleTable headers={documentColumns} data={documents} />
+            <SimpleTable headers={documentColumns} data={documents as Record<string, unknown>[]} />
           </div>
         </div>
 

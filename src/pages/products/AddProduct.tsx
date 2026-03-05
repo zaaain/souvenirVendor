@@ -71,7 +71,6 @@ const AddProduct = () => {
       sku: '',
       quantity: 0,
       price: '',
-      vat: '',
       discount: '',
       weight: '',
       height: '',
@@ -84,7 +83,7 @@ const AddProduct = () => {
     navigate('/products')
   }
 
-  const handlePublish = handleSubmit(async (data) => {
+  const handlePublish = handleSubmit(async (data: ProductFormData) => {
     setIsSubmitting(true)
     try {
       const formData = buildProductFormData(data, 'published', productImages, featuredImage)

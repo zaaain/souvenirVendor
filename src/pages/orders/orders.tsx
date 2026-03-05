@@ -53,7 +53,7 @@ function formatAmount(val: string | number | undefined): string {
   return String(val)
 }
 
-function buildColumns(onView: (id: string) => void, onEdit: (id: string) => void): TableColumn[] {
+function buildColumns(onView: (id: string) => void, _onEdit?: (id: string) => void): TableColumn[] {
   return [
     { key: 'rowNum', label: '#' },
     { key: 'orderId', label: 'Order ID', render: (v) => `#${String(v ?? '')}` },

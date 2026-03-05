@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { OrderTrackingStepper, type OrderStatus, type OrderTrackingStep } from '@components/order'
+import { OrderTrackingStepper, type OrderTrackingStep } from '@components/order'
 import { Modal } from '@components/modal'
 import { Select } from '@components/select'
 import { sSnack, eSnack } from '@hooks/useToast'

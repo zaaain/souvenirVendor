@@ -49,7 +49,6 @@ export function mapOrderToUi(apiOrder: VendorOrderDetail | null | undefined): Re
   const orderItems = Array.isArray(rawItems)
     ? rawItems.map((item: Record<string, unknown>) => {
         const productId = item.productId
-        const productIdStr = typeof productId === 'string' ? productId : (productId && typeof productId === 'object' && '_id' in productId ? String((productId as Record<string, unknown>)._id) : null)
         const productName = item.productName ?? item.name ?? (productId && typeof productId === 'object' && 'name' in productId ? String((productId as Record<string, unknown>).name) : null) ?? '—'
         return {
           productName,

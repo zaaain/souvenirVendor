@@ -16,14 +16,6 @@ export interface OrderTrackingStepperProps {
 
 const STATUS_ORDER: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
 
-const LABELS: Record<OrderStatus, string> = {
-  pending: 'Pending',
-  confirmed: 'Confirmed',
-  processing: 'Processing',
-  shipped: 'Shipped',
-  delivered: 'Delivered',
-}
-
 const STATUS_CONFIG: Record<
   OrderStatus,
   { icon: React.ReactNode; label: string }

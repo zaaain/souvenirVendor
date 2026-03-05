@@ -14,7 +14,7 @@ const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   const { t, i18n } = useTranslation()
   const location = useLocation()
   const handleLogout = useLogout()
-  
+
   const isRTL = i18n.language === 'ar'
   
   // RTL styles using rtl-css-js
@@ -51,7 +51,7 @@ const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
 
   const menuItems = [
     {
-      path: '',
+      path: '/',
       label: t('sidebar.dashboard'),
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,6 +95,20 @@ const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
         </svg>
       ),
     },
+    // {
+    //   path: '/settings/company',
+    //   label: t('sidebar.company'),
+    //   icon: (...),
+    // },
+    {
+      path: '/bank-details',
+      label: t('sidebar.bankDetails'),
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      ),
+    },
     // Settings - commented out from menu
     // {
     //   path: '/settings',
@@ -113,7 +127,11 @@ const Sidebar = ({ isOpen = true, onClose }: SidebarProps) => {
   }
 
   const isActive = (path: string) => {
-    return location.pathname === path
+    if (path === '' || path === '/') {
+      return location.pathname === '/' || location.pathname === ''
+    }
+    // Detail/sub routes: e.g. /products/69a88... keeps Products selected
+    return location.pathname === path || location.pathname.startsWith(path + '/')
   }
 
   const handleLinkClick = () => {

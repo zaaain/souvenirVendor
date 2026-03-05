@@ -74,11 +74,17 @@ export const productSlice = createApi({
       query: () => ({ url: 'vendor/categories' }),
       providesTags: ['Categories'],
     }),
-    getProducts: builder.query<GetProductsResponse, { page?: number; limit?: number }>({
-      query: ({ page = 1, limit = 10 }) => ({
-        url: 'vendor/products',
-        params: { page, limit },
-      }),
+    getProducts: builder.query<
+      GetProductsResponse,
+      { page?: number; limit?: number; status?: string; category?: string; search?: string }
+    >({
+      query: ({ page = 1, limit = 10, status, category, search }) => {
+        const params: Record<string, number | string> = { page, limit }
+        if (status) params.status = status
+        if (category) params.category = category
+        if (search?.trim()) params.search = search.trim()
+        return { url: 'vendor/products', params }
+      },
       providesTags: ['Products'],
     }),
     addProduct: builder.mutation<

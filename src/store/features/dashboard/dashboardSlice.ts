@@ -36,17 +36,22 @@ export interface DashboardResponse {
       _id?: string
       orderId?: string
       orderNumber?: string
+      totalAmount?: number
+      amount?: number
+      total?: number
+      status?: string
+      createdAt?: string
+      deliveredAt?: string
+      date?: string
+      userId?: { firstname?: string; lastname?: string; _id?: string; [key: string]: unknown }
+      products?: Array<{ name?: string; productId?: string; quantity?: number; price?: number; subtotal?: number; [key: string]: unknown }>
+      shippingAddress?: Record<string, unknown> | string
       customer?: string
       customerName?: string
       product?: string
       productName?: string
       deliveryAddress?: string
       address?: string
-      amount?: number | string
-      total?: number
-      status?: string
-      date?: string
-      createdAt?: string
       [key: string]: unknown
     }>
     revenue?: { total?: number; tax?: number; shipping?: number }

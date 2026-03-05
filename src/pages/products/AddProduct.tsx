@@ -23,11 +23,10 @@ function buildProductFormData(
   featuredImage: File[]
 ): FormData {
   const form = new FormData()
-  // API keys as per vendor/products POST (form-data): name, description, price, vat, discount, stock, category, sku, weight, height, width, length, images
+  // API keys as per vendor/products POST (form-data): name, description, price, discount, stock, category, sku, weight, height, width, length, images
   form.append('name', (data.productName ?? '').trim())
   form.append('description', (data.description ?? '').trim())
   form.append('price', (data.price ?? '').trim())
-  form.append('vat', (data.vat ?? '').trim())
   form.append('discount', (data.discount ?? '').trim())
   form.append('stock', String(data.quantity ?? 0))
   form.append('category', data.category ?? '')
@@ -217,42 +216,19 @@ const AddProduct = () => {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <h3 className="text-lg font-ManropeBold text-gray-800 mb-2">Pricing</h3>
             <div className="border-b border-gray-200 mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1 font-ManropeBold">
-                  Pricing
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10">$</span>
-                  <Controller
-                    name="price"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        placeholder="Base Price"
-                        type="number"
-                        className="pl-8"
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        error={errors.price?.message}
-                      />
-                    )}
-                  />
-                </div>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Controller
-                name="vat"
+                name="price"
                 control={control}
                 render={({ field }) => (
                   <Input
-                    label="VAT Amount (%)"
-                    placeholder="VAT Amount (%)"
+                    label="Pricing (Base Price)"
+                    placeholder="Base Price"
                     type="number"
                     value={field.value}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
-                    error={errors.vat?.message}
+                    error={errors.price?.message}
                   />
                 )}
               />

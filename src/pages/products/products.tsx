@@ -51,7 +51,7 @@ function mapProductToRow(item: ProductItem, index: number, startIndex: number): 
   const name = item.productName ?? item.name ?? ''
   const inv = item.inventory ?? item.quantity ?? 0
   const priceVal = item.price
-  const priceStr = typeof priceVal === 'number' ? `$${priceVal.toLocaleString()}` : String(priceVal ?? '')
+  const priceStr = typeof priceVal === 'number' ? `QAR ${priceVal.toLocaleString()}` : String(priceVal ?? '')
   const rawDate = item.dateAddedRaw ?? item.createdAt ?? item.dateAdded ?? ''
   const dateAdded = rawDate
     ? new Date(rawDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
@@ -157,6 +157,8 @@ const Products = () => {
   const { data: response, isLoading } = useGetProductsQuery({
     page,
     limit: ITEMS_PER_PAGE,
+    ...(status !== 'all' && { status: status.toLowerCase() }),
+    ...(search.trim() && { search: search.trim() }),
   })
 
   const rawList = useMemo(() => {
@@ -179,23 +181,13 @@ const Products = () => {
     return nestedTotal ?? d.total ?? d.totalCount ?? d.totalResults ?? rawList.length
   }, [response, rawList.length])
 
+  // API handles status & search; optional client-side date filter on current page
   const filtered = useMemo(() => {
-    let list = rawList
-    if (status !== 'all') list = list.filter((r) => capitalizeFirst(r.status ?? '') === status)
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      const name = (r: ProductItem) => String(r.productName ?? r.name ?? '').toLowerCase()
-      const sku = (r: ProductItem) => String(r.sku ?? '').toLowerCase()
-      const cat = (r: ProductItem) => getCategoryName(r.category).toLowerCase()
-      list = list.filter((r) => name(r).includes(q) || sku(r).includes(q) || cat(r).includes(q))
-    }
-    if (dateAdded) {
-      list = list.filter(
-        (r) => (r.dateAddedRaw ?? r.createdAt ?? '').toString().slice(0, 10) === dateAdded
-      )
-    }
-    return list
-  }, [rawList, search, status, dateAdded])
+    if (!dateAdded) return rawList
+    return rawList.filter(
+      (r) => (r.dateAddedRaw ?? r.createdAt ?? '').toString().slice(0, 10) === dateAdded
+    )
+  }, [rawList, dateAdded])
 
   const startIndex = (page - 1) * ITEMS_PER_PAGE
   const tableData = useMemo(

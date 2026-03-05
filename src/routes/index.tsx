@@ -9,6 +9,7 @@ import ResetPassword from '@pages/auth/reset-password'
 import Dashboard from '@pages/dashboard/dashboard'
 import Profile from '@pages/profile/profile'
 import Settings from '@pages/settings/settings'
+// import EditCompany from '@pages/settings/EditCompany'
 import Products from '@pages/products/products'
 import Orders from '@pages/orders/orders'
 import OrderDetail from '@pages/orders/OrderDetail'
@@ -17,6 +18,7 @@ import NotFound from '@pages/404/NotFound'
 import ProductDetail from '@pages/products/ProductDetail'
 import AddProduct from '@pages/products/AddProduct'
 import EditProduct from '@pages/products/EditProduct'
+import BankDetails from '@pages/bank-details/BankDetails'
 
 export const router = createBrowserRouter([
   {
@@ -61,6 +63,10 @@ export const router = createBrowserRouter([
         path: 'settings',
         element: <Settings />,
       },
+      // {
+      //   path: 'settings/company',
+      //   element: <EditCompany />,
+      // },
          {
         path: 'products/add',
         element: <AddProduct />,
@@ -88,6 +94,10 @@ export const router = createBrowserRouter([
       {
         path: 'my-earnings',
         element: <MyEarnings />,
+      },
+      {
+        path: 'bank-details',
+        element: <BankDetails />,
       },
     ],
   },

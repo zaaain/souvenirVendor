@@ -51,7 +51,7 @@ function PaginateTable({
     <div>
       <SimpleTable headers={headers} data={data} loading={loading} />
 
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 pt-4 border-t border-gray-100">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
         <div className="flex flex-wrap items-center gap-3 order-2 sm:order-1">
           <p className="text-sm font-Manrope text-gray-600">
             Showing{' '}

@@ -89,14 +89,6 @@ export const productSchema = yup.object().shape({
       const num = parseFloat(value)
       return !isNaN(num) && num > 0
     }),
-  vat: yup
-    .string()
-    .default('')
-    .test('is-valid-percentage', 'VAT must be a valid percentage', (value) => {
-      if (!value) return true // Optional
-      const num = parseFloat(value)
-      return !isNaN(num) && num >= 0 && num <= 100
-    }),
   discount: yup
     .string()
     .default('')
@@ -139,9 +131,34 @@ export const productSchema = yup.object().shape({
     }),
 })
 
+/** POST /vendor/bank-details payload */
+export const bankDetailsSchema = yup.object().shape({
+  bankName: yup
+    .string()
+    .trim()
+    .required('Bank name is required')
+    .min(2, 'Bank name must be at least 2 characters'),
+  accountHolderName: yup
+    .string()
+    .trim()
+    .required('Account holder name is required')
+    .min(2, 'Account holder name must be at least 2 characters'),
+  accountNumber: yup
+    .string()
+    .trim()
+    .required('Account number is required')
+    .min(4, 'Account number must be at least 4 characters'),
+  accountType: yup
+    .string()
+    .trim()
+    .required('Account type is required')
+    .oneOf(['savings', 'current'], 'Account type must be savings or current'),
+})
+
 export type LoginFormData = yup.InferType<typeof loginSchema>
 export type RegisterFormData = yup.InferType<typeof registerSchema>
 export type ForgotPasswordFormData = yup.InferType<typeof forgotPasswordSchema>
 export type ResetPasswordFormData = yup.InferType<typeof resetPasswordSchema>
 export type ProductFormData = yup.InferType<typeof productSchema>
+export type BankDetailsFormData = yup.InferType<typeof bankDetailsSchema>
 

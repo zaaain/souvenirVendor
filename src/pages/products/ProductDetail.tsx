@@ -6,7 +6,8 @@ import { Modal } from '@components/modal'
 import { useGetProductByIdQuery, useDeleteProductMutation, API_BASE_URL } from '@store/features/products/productSlice'
 import type { ProductItem } from '@store/features/products/productSlice'
 import { sSnack, eSnack } from '@hooks/useToast'
-import { TailSpin } from 'react-loader-spinner'
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 const STATUS_PILL: Record<string, string> = {
   Pending: 'bg-amber-100 text-amber-700',
@@ -46,7 +47,7 @@ function mapProductToDetail(p: ProductItem): ProductDetailData {
   const l = shipping?.length ?? ''
   const dimensions = [h, l, w].every((x) => x !== '' && x !== undefined) ? `${h} x ${l} x ${w}` : '—'
   const priceVal = p.price
-  const priceStr = typeof priceVal === 'number' ? `$${Number(priceVal).toLocaleString()}` : (priceVal ? `$${String(priceVal)}` : '—')
+  const priceStr = typeof priceVal === 'number' ? `QAR ${Number(priceVal).toLocaleString()}` : (priceVal ? `QAR ${String(priceVal)}` : '—')
   const featureImageRaw = (p as { featureImage?: string }).featureImage?.trim()
   const imagesRaw = (p as { images?: (string | string[])[] }).images ?? []
   // API may send images as array of strings; an element can be comma-separated paths
@@ -75,12 +76,11 @@ function mapProductToDetail(p: ProductItem): ProductDetailData {
     ],
     pricing: [
       { label: 'Pricing', value: priceStr },
-      { label: 'VAT Amount (%)', value: p.vat != null ? `${p.vat}%` : '—' },
-      { label: 'Discount Percentage (%)', value: p.discount != null ? `${p.discount}%` : '—' },
+      { label: 'Discount Percentage (%)', value: p.discount != null ? `${p.discount}%` : '—', alignEnd: true },
     ],
     shipping: [
       { label: 'Weight (kg)', value: String(weight || '—') },
-      { label: 'Dimensions [Height x Length x Width] (cm)', value: dimensions },
+      { label: 'Dimensions [Height x Length x Width] (cm)', value: dimensions, alignEnd: true },
     ],
     images: allImages,
     hasFeatureImage,
@@ -128,8 +128,18 @@ const ProductDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center">
-        <TailSpin visible height={60} width={60} color="#2466D0" ariaLabel="Loading product" />
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton circle height={100} width={100} />
+          <div className="space-y-2">
+            <Skeleton height={32} width={280} />
+            <Skeleton height={24} width={100} />
+          </div>
+        </div>
+        <Skeleton height={200} className="rounded-xl" />
+        <Skeleton height={120} className="rounded-xl" />
+        <Skeleton height={120} className="rounded-xl" />
+        <Skeleton height={200} className="rounded-xl" />
       </div>
     )
   }

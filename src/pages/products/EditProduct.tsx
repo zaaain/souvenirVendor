@@ -11,7 +11,8 @@ import type { SelectOption } from '@components/select'
 import { useGetProductByIdQuery, useGetCategoriesQuery, useUpdateProductMutation, API_BASE_URL } from '@store/features/products/productSlice'
 import type { ProductItem } from '@store/features/products/productSlice'
 import { sSnack, eSnack } from '@hooks/useToast'
-import { TailSpin } from 'react-loader-spinner'
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 const STATUS_OPTIONS: SelectOption[] = [
   { value: 'draft', label: 'Draft' },
@@ -66,7 +67,6 @@ const EditProduct = () => {
       setQuantity(Number(product.stock ?? product.inventory ?? product.quantity ?? 0))
       const p = product.price
       setPrice(typeof p === 'number' ? String(p) : String(p ?? ''))
-      setVat(product.vat != null ? String(product.vat) : '')
       setDiscount(product.discount != null ? String(product.discount) : '')
       const ship = (product as { shippingDetails?: { weight?: number; height?: number; width?: number; length?: number } }).shippingDetails
       setWeight(ship?.weight != null ? String(ship.weight) : '')
@@ -144,8 +144,17 @@ const EditProduct = () => {
 
   if (isLoadingProduct || !product) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center">
-        <TailSpin visible height={60} width={60} color="#2466D0" ariaLabel="Loading product" />
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton height={40} width={40} />
+          <div className="space-y-2">
+            <Skeleton height={32} width={240} />
+            <Skeleton height={24} width={80} />
+          </div>
+        </div>
+        <Skeleton height={200} className="rounded-xl" />
+        <Skeleton height={180} className="rounded-xl" />
+        <Skeleton height={160} className="rounded-xl" />
       </div>
     )
   }
@@ -168,7 +177,7 @@ const EditProduct = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-ManropeBold text-gray-800">Edit Product</h1>
             <span className={`inline-flex px-3 py-1 rounded-full text-sm font-Manrope ${statusBadgeClass[status] || statusBadgeClass.draft}`}>
-              {STATUS_OPTIONS.find((opt) => opt.value === status)?.label || status}
+              {STATUS_OPTIONS.find((opt) => opt.value === status)?.label || (status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : '')}
             </span>
           </div>
         </div>
@@ -240,28 +249,13 @@ const EditProduct = () => {
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <h3 className="text-lg font-ManropeBold text-gray-800 mb-2">Pricing</h3>
             <div className="border-b border-gray-200 mb-4" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1 font-ManropeBold">
-                  Pricing
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                  <Input
-                    placeholder="Base Price"
-                    type="number"
-                    className="pl-8"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                  />
-                </div>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="VAT Amount (%)"
-                placeholder="VAT Amount (%)"
+                label="Pricing (Base Price)"
+                placeholder="Base Price"
                 type="number"
-                value={vat}
-                onChange={(e) => setVat(e.target.value)}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
               />
               <Input
                 label="Discount Percentage (%)"

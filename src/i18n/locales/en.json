@@ -5,6 +5,8 @@
     "orders": "Orders",
     "myEarnings": "My Earnings",
     "profile": "Profile",
+    "company": "Company",
+    "bankDetails": "Bank Details",
     "settings": "Settings",
     "logout": "Logout"
   },

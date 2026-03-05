@@ -5,6 +5,9 @@ import { authSlice } from './features/auth/authSlice'
 import { profileSlice } from './features/profile/profileSlice'
 import { productSlice } from './features/products/productSlice'
 import { dashboardSlice } from './features/dashboard/dashboardSlice'
+import { ordersSlice } from './features/orders/ordersSlice'
+import { earningsSlice } from './features/earnings/earningsSlice'
+import { bankDetailsSlice } from './features/bankDetails/bankDetailsSlice'
 import rootReducer from './rootReducer'
 
 const persistConfig = {
@@ -22,7 +25,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }).concat(authSlice.middleware, profileSlice.middleware, productSlice.middleware, dashboardSlice.middleware),
+    }).concat(authSlice.middleware, profileSlice.middleware, productSlice.middleware, dashboardSlice.middleware, ordersSlice.middleware, earningsSlice.middleware, bankDetailsSlice.middleware),
 })
 
 export const persistor = persistStore(store)

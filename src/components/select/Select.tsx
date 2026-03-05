@@ -10,6 +10,8 @@ export interface SelectProps {
   placeholder?: string
   disabled?: boolean
   label?: string
+  /** Error message shown below the select; when set, border is red */
+  error?: string
   /** Optional class for the root wrapper. */
   className?: string
   /** 'full' = pill (default), 'lg' = rounded-lg for form/filter layouts */
@@ -23,6 +25,7 @@ function Select({
   placeholder = 'Select...',
   disabled = false,
   label,
+  error,
   className = '',
   rounded = 'full',
 }: SelectProps) {
@@ -39,7 +42,7 @@ function Select({
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           disabled={disabled}
-          className={`appearance-none bg-inputBg border border-[#DDD] pl-4 pr-10 py-2 text-sm font-Manrope text-gray-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed ${roundedClass} ${rounded === 'lg' ? 'w-full h-10' : ''}`}
+          className={`appearance-none bg-inputBg pl-4 pr-10 py-2 text-sm font-Manrope text-gray-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed ${error ? 'border-red-500' : 'border border-[#DDD]'} ${roundedClass} ${rounded === 'lg' ? 'w-full h-10' : ''}`}
         >
         {placeholder && (
           <option value="" disabled>
@@ -61,6 +64,9 @@ function Select({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </div>
+      {error && (
+        <p className="mt-1 text-sm text-red-500 font-Manrope">{error}</p>
+      )}
     </div>
   )
 }

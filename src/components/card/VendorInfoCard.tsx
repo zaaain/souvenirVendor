@@ -3,6 +3,8 @@ export interface VendorInfoCardItem {
   value: string
   /** 1 = one col, 2 = two cols, 3 = full width on lg. Default 1. */
   colSpan?: 1 | 2 | 3
+  /** When true, on lg the item is placed in the last column (right corner). */
+  alignEnd?: boolean
 }
 
 export interface VendorInfoCardProps {
@@ -19,13 +21,12 @@ function VendorInfoCard({ heading, data }: VendorInfoCardProps) {
         {data.map((item, i) => (
           <div
             key={i}
-            className={
-              item.colSpan === 3
-                ? 'lg:col-span-3'
-                : item.colSpan === 2
-                  ? 'lg:col-span-2'
-                  : ''
-            }
+            className={[
+              item.colSpan === 3 ? 'lg:col-span-3' : item.colSpan === 2 ? 'lg:col-span-2' : '',
+              item.alignEnd ? 'lg:col-start-3' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             <p className="text-xs font-Manrope text-gray-500">{item.label}</p>
             <p className="text-sm font-ManropeBold text-gray-800 mt-0.5">{item.value}</p>

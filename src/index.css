@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -47,9 +49,6 @@ body {
   font-weight: 100 1000;
   src: url("../public/fonts/Manrope-Regular.ttf") format("truetype");
 }
-
-
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
 
 /* Dashboard Layout Styles */
 .dashboard-layout {

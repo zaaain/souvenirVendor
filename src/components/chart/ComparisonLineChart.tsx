@@ -52,7 +52,7 @@ function ComparisonTooltipContent({
             style={{ backgroundColor: entry.color }}
           />
           <span className="text-sm font-Manrope text-gray-800">
-            {entry.name}: ${entry.value.toLocaleString()}
+            {entry.name}: QAR {entry.value.toLocaleString()}
           </span>
         </div>
       ))}
@@ -80,8 +80,8 @@ function ComparisonLineChart({
   const [activeDay, setActiveDay] = useState<string | null>(null)
 
   function formatYAxis(value: number): string {
-    if (value >= 1000) return `$${value / 1000}k`
-    return `$${value}`
+    if (value >= 1000) return `QAR ${value / 1000}k`
+    return `QAR ${value}`
   }
 
   // Transform data to include day labels

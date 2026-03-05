@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import moment from 'moment'
 import { SummaryCard } from '@components/card'
 import { ConversionRateCard } from '@components/card'
 import { VisitsByDeviceCard, type VisitsByDeviceItem, type DeviceIconType } from '@components/card'
@@ -9,7 +10,7 @@ import { SalesTrendsComparisonCard } from '@components/card'
 import { RecentOrdersCard } from '@components/card'
 import { useGetDashboardQuery, useGetAnalyticsSalesQuery, type AnalyticsPeriod } from '@store/features/dashboard/dashboardSlice'
 
-const formatCurrency = (n: number) => (n == null || Number.isNaN(n) ? '$0' : `$${Number(n).toLocaleString()}`)
+const formatCurrency = (n: number) => (n == null || Number.isNaN(n) ? 'QAR 0' : `QAR ${Number(n).toLocaleString()}`)
 
 const Dashboard = () => {
   const [conversionRateTab, setConversionRateTab] = useState('week')
@@ -50,23 +51,46 @@ const Dashboard = () => {
     ]
   }, [dashboardData?.data?.orders])
 
+  /** Format address object from API (line1, line2, town, country, etc.) */
+  const formatOrderAddress = (addr: unknown): string => {
+    if (addr == null) return '—'
+    if (typeof addr === 'string') return addr
+    if (typeof addr !== 'object') return '—'
+    const o = addr as Record<string, unknown>
+    const parts = [o.line1, o.line2, o.town, o.postalCode, o.country, o.phone].filter(Boolean).map(String)
+    return parts.length ? parts.join(', ') : '—'
+  }
+
   const recentOrdersRows = useMemo(() => {
     const fromApi = dashboardData?.data?.recentOrders
     if (!fromApi?.length) return []
     return fromApi.map((row, i) => {
       const id = row._id ?? row.orderId ?? row.orderNumber ?? ''
-      const amount = row.amount ?? row.total
+      const amount = row.totalAmount ?? row.amount ?? row.total
       const amountStr = typeof amount === 'number' ? formatCurrency(amount) : String(amount ?? '')
+      const first = row.userId?.firstname ?? ''
+      const last = row.userId?.lastname ?? ''
+      const customer = [first, last].filter(Boolean).join(' ').trim() || (row.customerName ?? row.customer ?? '—')
+      const productList = row.products
+      const product =
+        Array.isArray(productList) && productList.length
+          ? productList.map((p: { name?: string }) => p.name).filter(Boolean).join(', ') || '—'
+          : row.productName ?? row.product ?? '—'
+      const deliveryAddress = formatOrderAddress(row.shippingAddress) || (row.deliveryAddress ?? row.address ?? '—')
+      const rawStatus = (row.status ?? 'pending').toString().toLowerCase()
+      const status = rawStatus ? rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1) : 'Pending'
+      const rawDate = row.createdAt ?? row.deliveredAt ?? row.date ?? ''
+      const date = rawDate ? moment(rawDate).format('DD MMM YYYY, HH:mm') : '—'
       return {
         rowNum: i + 1,
         orderId: row.orderId ?? row.orderNumber ?? `#${id}`,
         orderLink: `/orders/${id}`,
-        customer: row.customerName ?? row.customer ?? '',
-        product: row.productName ?? row.product ?? '',
-        deliveryAddress: row.deliveryAddress ?? row.address ?? '',
+        customer,
+        product,
+        deliveryAddress,
         amount: amountStr,
-        status: row.status ?? 'Pending',
-        date: row.date ?? row.createdAt ?? '',
+        status,
+        date,
       }
     })
   }, [dashboardData?.data?.recentOrders])
@@ -177,10 +201,9 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Analytics Section - Conversion Rate, Visits & Users, Age Distribution */}
-      <div className="mb-8">
+      {/* Analytics Section - Conversion Rate, Visits & Users, Age Distribution - COMMENTED OUT */}
+      {/* <div className="mb-8">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Conversion Rate Card */}
           <ConversionRateCard
             title="Conversion Rate"
             subtitle="This Week"
@@ -195,18 +218,13 @@ const Dashboard = () => {
             data={conversionChartData}
             loading={isLoading}
           />
-
-          {/* Middle Column - Two Separate Cards */}
           <div className="flex flex-col h-full gap-6">
-            {/* Visits by Device Card */}
             <VisitsByDeviceCard
               title="Visits by Device"
               subtitle="All Time"
               items={visitsByDeviceItems}
               loading={isLoading}
             />
-
-            {/* Users Visits Card */}
             <UsersVisitsCard
               title="Users Visits"
               subtitle="All Time"
@@ -215,8 +233,6 @@ const Dashboard = () => {
               fillHeight={true}
             />
           </div>
-
-          {/* Age Distribution Card */}
           <AgeDistributionCard
             title="Age Distribution"
             subtitle="All Time"
@@ -224,7 +240,7 @@ const Dashboard = () => {
             loading={isLoading}
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Category Performance & Sales Trends Section */}
       <div className="mb-8">

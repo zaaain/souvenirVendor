@@ -145,8 +145,9 @@ export interface VendorOrderDetail {
   createdAt?: string
   updatedAt?: string
   trackingSteps?: Array<{ status?: string; date?: string; time?: string; [key: string]: unknown }>
+  statusHistory?: Array<{ status?: string; date?: string; time?: string; timestamp?: string; [key: string]: unknown }>
   invoice?: { fileName?: string; size?: string; generatedDate?: string; [key: string]: unknown }
-  deliveryProof?: { fileName?: string; status?: string; [key: string]: unknown }
+  deliveryProof?: string | { fileName?: string; status?: string; [key: string]: unknown }
   trackingNumber?: string
   [key: string]: unknown
 }

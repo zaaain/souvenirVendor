@@ -1,4 +1,5 @@
 import React from 'react'
+import moment from 'moment'
 
 /** Order status keys used by API (cancelled is not shown in stepper) */
 export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered'
@@ -12,6 +13,7 @@ export interface OrderTrackingStep {
 export interface OrderTrackingStepperProps {
   currentStatus: OrderStatus
   steps: OrderTrackingStep[]
+  createdAt?: string
 }
 
 const STATUS_ORDER: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered']
@@ -62,7 +64,7 @@ const STATUS_CONFIG: Record<
   },
 }
 
-function OrderTrackingStepper({ currentStatus, steps }: OrderTrackingStepperProps) {
+function OrderTrackingStepper({ currentStatus, steps, createdAt }: OrderTrackingStepperProps) {
   const normalizedCurrent = (currentStatus ?? 'pending').toLowerCase() as OrderStatus
   const currentIndex = STATUS_ORDER.indexOf(normalizedCurrent) >= 0
     ? STATUS_ORDER.indexOf(normalizedCurrent)
@@ -99,6 +101,10 @@ function OrderTrackingStepper({ currentStatus, steps }: OrderTrackingStepperProp
                   {step?.date && step?.time ? (
                     <p className="text-xs text-gray-500 mt-1">
                       {step.date}, {step.time}
+                    </p>
+                  ) : status === 'pending' && createdAt ? (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {moment(createdAt).format('DD/MM/YY, HH:mm')}
                     </p>
                   ) : (
                     <p className="text-xs text-gray-400 mt-1">DD/MM/YY, 00:00</p>

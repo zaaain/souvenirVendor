@@ -19,8 +19,15 @@ import 'react-loading-skeleton/dist/skeleton.css'
 /** Same logo as sidebar – used in invoice PDF */
 import Logo from '@assets/svg/logo.svg'
 
-/** Order status keys used by API: pending, confirmed, processing, shipped, delivered, cancelled */
-const ORDER_STATUS_VALUES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] as const
+/** Next allowed statuses from current status (step-by-step flow) */
+const NEXT_STATUS_MAP: Record<string, string[]> = {
+  pending: ['confirmed', 'cancelled'],
+  confirmed: ['processing', 'cancelled'],
+  processing: ['shipped', 'cancelled'],
+  shipped: ['delivered', 'cancelled'],
+  delivered: [],
+  cancelled: [],
+}
 
 const STATUS_PILL: Record<string, string> = {
   pending: 'bg-gray-100 text-gray-600',
@@ -31,10 +38,6 @@ const STATUS_PILL: Record<string, string> = {
   cancelled: 'bg-red-100 text-red-600',
 }
 
-const ORDER_STATUS_OPTIONS = ORDER_STATUS_VALUES.map((v) => ({
-  value: v,
-  label: v.charAt(0).toUpperCase() + v.slice(1),
-}))
 
 function OrderDetail() {
   const { id } = useParams<{ id: string }>()
@@ -52,6 +55,17 @@ function OrderDetail() {
   const status = orderData.status as string
   const statusForStepper = toOrderStatus(status)
   const isCancelled = (status ?? '').toLowerCase() === 'cancelled'
+  const isDelivered = (status ?? '').toLowerCase() === 'delivered'
+
+  const rawDeliveryProof = data?.data?.deliveryProof
+  const deliveryProofUrl = typeof rawDeliveryProof === 'string' && rawDeliveryProof
+    ? `https://api.souvenir.live${rawDeliveryProof}`
+    : null
+  const nextStatuses = NEXT_STATUS_MAP[(status ?? '').toLowerCase()] ?? []
+  const nextStatusOptions = nextStatuses.map((v) => ({
+    value: v,
+    label: v.charAt(0).toUpperCase() + v.slice(1),
+  }))
 
   const vendorName = profileData?.firstname || profileData?.lastname
     ? `${profileData?.firstname ?? ''} ${profileData?.lastname ?? ''}`.trim()
@@ -83,8 +97,7 @@ function OrderDetail() {
   }
 
   const openUpdateStatusModal = () => {
-    const current = (status ?? '').toString().toLowerCase()
-    setUpdateStatusSelect(ORDER_STATUS_VALUES.includes(current as typeof ORDER_STATUS_VALUES[number]) ? current : 'pending')
+    setUpdateStatusSelect(nextStatuses[0] ?? '')
     setUpdateStatusModalOpen(true)
   }
 
@@ -173,7 +186,7 @@ function OrderDetail() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {!isCancelled && (
+          {!isCancelled && !isDelivered && (
             <>
               <button
                 type="button"
@@ -206,6 +219,7 @@ function OrderDetail() {
               <OrderTrackingStepper
                 currentStatus={statusForStepper}
                 steps={orderData.trackingSteps as OrderTrackingStep[]}
+                createdAt={data?.data?.createdAt}
               />
             )}
           </div>
@@ -279,26 +293,28 @@ function OrderDetail() {
                   </svg>
                 </button>
               </div>
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <div>
-                    <p className="text-sm font-ManropeBold text-gray-800">
-                      {(orderData.deliveryProof as Record<string, unknown>)?.fileName as string}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {(orderData.deliveryProof as Record<string, unknown>)?.status as string}
-                    </p>
+              {deliveryProofUrl && (
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p className="text-sm font-ManropeBold text-gray-800">Delivery Proof</p>
                   </div>
+                  <a
+                    href={deliveryProofUrl}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-primary hover:bg-primary/10 rounded transition-colors"
+                    aria-label="Download delivery proof"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </a>
                 </div>
-                <button type="button" className="p-2 text-primary hover:bg-primary/10 rounded transition-colors" aria-label="Upload">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -393,7 +409,7 @@ function OrderDetail() {
               label="Status"
               value={updateStatusSelect}
               onValueChange={setUpdateStatusSelect}
-              options={ORDER_STATUS_OPTIONS}
+              options={nextStatusOptions}
               placeholder="Select status"
               rounded="lg"
             />

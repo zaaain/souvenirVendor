@@ -1,6 +1,7 @@
 import type { OrderStatus, OrderTrackingStep } from '@components/order'
 import type { VendorOrderDetail } from '@store/features/orders/ordersSlice'
 import { formatCurrency } from '@constants/currency'
+import moment from 'moment'
 
 /** Map API status to stepper OrderStatus */
 export function toOrderStatus(s: string | undefined): OrderStatus {
@@ -58,11 +59,15 @@ export function mapOrderToUi(apiOrder: VendorOrderDetail | null | undefined): Re
         }
       })
     : []
-  const steps = (apiOrder.trackingSteps ?? []).map((s) => ({
-    status: (s.status ?? '') as OrderStatus,
-    date: s.date ?? '',
-    time: s.time ?? '',
-  })) as OrderTrackingStep[]
+  const rawSteps = apiOrder.trackingSteps?.length
+    ? apiOrder.trackingSteps
+    : (apiOrder.statusHistory ?? [])
+  const steps = rawSteps.map((s) => {
+    const ts = s.timestamp as string | undefined
+    const date = ts ? moment(ts).format('DD/MM/YY') : (s.date as string ?? '')
+    const time = ts ? moment(ts).format('HH:mm') : (s.time as string ?? '')
+    return { status: (s.status ?? '') as OrderStatus, date, time }
+  }) as OrderTrackingStep[]
   const userId = apiOrder.userId
   const customerName = (apiOrder as Record<string, unknown>).customerName ?? (apiOrder as Record<string, unknown>).customer
     ?? (userId ? `${String(userId.firstname ?? '').trim()} ${String(userId.lastname ?? '').trim()}`.trim() : null) ?? '—'
